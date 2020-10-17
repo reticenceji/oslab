@@ -19,9 +19,11 @@ SECTIONS
       *(.data)
   }
 
+  _bss_start = .;
   .bss : {
       *(.bss)
   }
+  _bss_end = .;
 
   . += 0x8000;
   stack_top = .;
