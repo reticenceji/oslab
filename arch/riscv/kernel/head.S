@@ -12,15 +12,22 @@ _loop_clear_bss:
     add t0,t0,1
     j _loop_clear_bss 
 _done_clear_bss:        #循环的将.bss段内容设置为0
-                        #必须clear bss 的原因 
+                        #必须clear bss 的原因
+
+    ld t0, 0(mtime)
+    addi t0, t0, 1000000
+    sd t0, 0(mtimecmp)  #设置mtimecmp = mtime+1000000
 
     addi t0,zero, 0x80 
     csrw mideleg, t0    #设置委托
-    csrw mie, t0        #Xie[7]=1, 即允许时钟中断   
-    
+    csrw mie, t0        #mie[mtie] = 1, 即允许时钟中断
+    csrw sie, t0        #sie[stie] = 1
+
     addi t0, zero, 0x7FF
-    addi t0, t0, 0xB
-    csrw mstatus, t0    #set mstatus's MPP to S mode, 允许产生中断
+    addi t0, t0, 0x8
+    csrw mstatus, t0    #set mstatus's MPP to S Mode; mstatus[mie] = 1
+    li t0, 8
+    csrw sstatus, t0    #sstatus[sie] = 1
 
     la t0, retaddr  
     csrw mepc, t0       #设置mret的返回地址
@@ -37,6 +44,25 @@ retaddr:
     call start_kernel
     wfi                 #Wait For Interrupt, 暂停等待中断
 
+
+#exception handlers
 .align 3
+
 exception_m_addr:
+.globl trap_m
+trap_m:
+    #SUB SP, SIZEOF NEEDED REGISTERS:
+
+    #SAVE REGISTERS ONE BY ONE USING "SD" INSTRUCTION:
+
+    # **DO SOMETHING**:
+        #TIME INTERRUPT:
+        #ECALL:
+
+    #RESTORE REGISTERS:
+
+    #ADD SP, SIZEOF NEEDED REGISTERS:
+
+    #mret
+
 exception_s_addr:
