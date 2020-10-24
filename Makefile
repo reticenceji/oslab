@@ -14,6 +14,7 @@ CFLAG = ${CF} ${INCLUDE}
 #INCLUDE是告诉gcc在哪里寻找头文件，
 
 subsystem:
+	$(MAKE) -C lib
 	$(MAKE) -C init
 	$(MAKE) -C arch/riscv
 #$(MAKE) -C subdir 等价于 cd subdir && $(MAKE)

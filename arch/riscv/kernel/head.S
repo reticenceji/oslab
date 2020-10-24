@@ -1,48 +1,51 @@
 .section .text.init
 .globl _start
-EXTERN(_bss_start)
-EXTERN(_bss_end)         #其实我也不确定这样对不对
+.equ STACKSIZE, 0x100            #栈帧大小
+.equ MTIME, 0x2004ff8
+.equ MTIMECMP, 0x2004000
 
 _start:
     la t0, _bss_start
-    la t1, _bss_end      #后面那个符号是lds给出的
-_loop_clear_bss:
-    beq t0,t1 _done_clear_bss
-    sb zero,0(t0) 
-    add t0,t0,1
-    j _loop_clear_bss 
-_done_clear_bss:        #循环的将.bss段内容设置为0
-                        #必须clear bss 的原因
-
-    ld t0, 0(mtime)
-    addi t0, t0, 1000000
-    sd t0, 0(mtimecmp)  #设置mtimecmp = mtime+1000000
+    la t1, _bss_end             #后面那个符号是lds给出的
+loop_clear_bss:
+    beq t0, t1, done_clear_bss
+    sb zero, 0(t0) 
+    addi t0, t0, 1
+    j loop_clear_bss 
+done_clear_bss:                 #循环的将.bss段内容设置为0
+                                #必须clear bss 的原因
+    li t0, MTIME
+    ld t0, 0(t0)
+    li t1, 1000000
+    add t0, t0, t1
+    li t1, MTIMECMP
+    sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
 
     addi t0,zero, 0x80 
-    csrw mideleg, t0    #设置委托
-    csrw mie, t0        #mie[mtie] = 1, 即允许时钟中断
-    csrw sie, t0        #sie[stie] = 1
+    csrw mideleg, t0            #设置委托
+    csrw mie, t0                #mie[mtie] = 1, 即允许时钟中断
+    csrw sie, t0                #sie[stie] = 1
 
     addi t0, zero, 0x7FF
     addi t0, t0, 0x8
-    csrw mstatus, t0    #set mstatus's MPP to S Mode; mstatus[mie] = 1
-    li t0, 8
-    csrw sstatus, t0    #sstatus[sie] = 1
+    csrw mstatus, t0            #set mstatus's MPP to S Mode; mstatus[mie] = 1
+    li t0, 0x8
+    csrw sstatus, t0            #sstatus[sie] = 1
 
     la t0, retaddr  
-    csrw mepc, t0       #设置mret的返回地址
+    csrw mepc, t0               #设置mret的返回地址
     la t0, exception_m_addr
-    slli t0, t0, 2      #设置M mode Trap处理地址，为什么要左移两位？
-    csrw mtvec, t0      #设置machine mode异常处理地址
+    slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位？
+    csrw mtvec, t0              #设置machine mode异常处理地址
     mret
     
 retaddr:
     la sp, stack_top
     la t0, exception_s_addr
-    slli t0, t0, 2
-    csrw stvec, t0      #设置supervisor mode异常处理地址
+    slli t0, t0, 0x2
+    csrw stvec, t0              #设置supervisor mode异常处理地址
     call start_kernel
-    wfi                 #Wait For Interrupt, 暂停等待中断
+    wfi                         #Wait For Interrupt, 暂停等待中断
 
 
 #exception handlers
@@ -51,18 +54,45 @@ retaddr:
 exception_m_addr:
 .globl trap_m
 trap_m:
-    #SUB SP, SIZEOF NEEDED REGISTERS:
+    addi sp, sp, -STACKSIZE
 
-    #SAVE REGISTERS ONE BY ONE USING "SD" INSTRUCTION:
+    csrr t0, mepc
+    sd t0, STACKSIZE-0x8(sp)
+    sd t0, STACKSIZE-0x10(sp)
+    sd t1, STACKSIZE-0x18(sp)
 
-    # **DO SOMETHING**:
-        #TIME INTERRUPT:
-        #ECALL:
+#TIME INTERRUPT:
+    lui t0, 0x80000
+    slli t0, t0, 0x20
+    addi t0, t0, 0x7            #t0 = 0x8000 0000 0000 0007
+    csrr t1, mcause
+    bne t1, t0, ecall_handler_m
+    li t1, 0x20
+    csrrs zero, mip, t1         #mip[stip]=1
+    li t1, 0x80
+    csrrc zero, mie, t1         #mie[mtie]=0
+    j return_m
 
-    #RESTORE REGISTERS:
+#ECALL:
+ecall_handler_m:
+    li t1, MTIMECMP
+    ld t1, 0(t1)
+    li t0, 100000
+    add t1, t1, t0
+    li t0, MTIMECMP
+    sd t1, 0(t0)
 
-    #ADD SP, SIZEOF NEEDED REGISTERS:
+return_m:
+    ld t1, STACKSIZE-0x18(sp)
+    ld t0, STACKSIZE-0x10(sp)
+    ld t0, STACKSIZE-0x8(sp)
+    csrw mepc, t0
 
-    #mret
+    addi sp, sp, STACKSIZE
+    mret
 
 exception_s_addr:
+.globl trap_s
+trap_s:
+    #call trap_supervisor
+    sret
