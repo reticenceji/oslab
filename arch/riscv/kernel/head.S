@@ -35,7 +35,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     la t0, retaddr  
     csrw mepc, t0               #设置mret的返回地址
     la t0, exception_m_addr
-    slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位？
+    slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位,因为mtevc低两位是mode。
     csrw mtvec, t0              #设置machine mode异常处理地址
     mret
     
@@ -59,7 +59,7 @@ trap_m:
     csrr t0, mepc
     sd t0, STACKSIZE-0x8(sp)
     sd t0, STACKSIZE-0x10(sp)
-    sd t1, STACKSIZE-0x18(sp)
+    sd t1, STACKSIZE-0x18(sp)   #保存寄存器
 
 #TIME INTERRUPT:
     lui t0, 0x80000
@@ -91,8 +91,7 @@ return_m:
     addi sp, sp, STACKSIZE
     mret
 
-exception_s_addr:
-.globl trap_s
-trap_s:
+#exception_s_addr:
+#trap_s:
     #call trap_supervisor
-    sret
+    #sret               #移到entry.S了
