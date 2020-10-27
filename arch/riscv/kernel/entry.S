@@ -1,4 +1,4 @@
-.section .text
+.section .text.entry
 .globl exception_s_addr
 .macro PUSH reg
     sd  \reg, 0(sp)
