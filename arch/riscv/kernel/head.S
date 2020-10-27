@@ -1,7 +1,7 @@
 .section .text.init
 .globl _start
 .equ STACKSIZE, 0x100            #栈帧大小
-.equ MTIME, 0x2004ff8
+.equ MTIME, 0x200bff8
 .equ MTIMECMP, 0x2004000
 
 _start:
@@ -20,22 +20,21 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     add t0, t0, t1
     li t1, MTIMECMP
     sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
-
-    addi t0,zero, 0x80 
+    
+    li t0, 0x20
     csrw mideleg, t0            #设置委托
+    li t0, 0x80
     csrw mie, t0                #mie[mtie] = 1, 即允许时钟中断
     csrw sie, t0                #sie[stie] = 1
 
-    addi t0, zero, 0x7FF
-    addi t0, t0, 0x8
+    li t0, 0x7FF
+    addi t0, t0, 0xB
     csrw mstatus, t0            #set mstatus's MPP to S Mode; mstatus[mie] = 1
-    li t0, 0x8
-    csrw sstatus, t0            #sstatus[sie] = 1
 
     la t0, retaddr  
     csrw mepc, t0               #设置mret的返回地址
     la t0, exception_m_addr
-    slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位,因为mtevc低两位是mode。
+    slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位？
     csrw mtvec, t0              #设置machine mode异常处理地址
     mret
     
@@ -56,10 +55,16 @@ exception_m_addr:
 trap_m:
     addi sp, sp, -STACKSIZE
 
-    csrr t0, mepc
     sd t0, STACKSIZE-0x8(sp)
-    sd t0, STACKSIZE-0x10(sp)
-    sd t1, STACKSIZE-0x18(sp)   #保存寄存器
+    sd t1, STACKSIZE-0x10(sp)
+    csrr t0, mepc
+    sd t0, STACKSIZE-0x18(sp)
+    csrr t0, mstatus
+    sd t0, STACKSIZE-0x20(sp)
+    csrr t0, mie
+    sd t0, STACKSIZE-0x28(sp)
+    csrr t0, mip
+    sd t0, STACKSIZE-0x30(sp)
 
 #TIME INTERRUPT:
     lui t0, 0x80000
@@ -83,15 +88,22 @@ ecall_handler_m:
     sd t1, 0(t0)
 
 return_m:
-    ld t1, STACKSIZE-0x18(sp)
-    ld t0, STACKSIZE-0x10(sp)
-    ld t0, STACKSIZE-0x8(sp)
+    ld t0, STACKSIZE-0x30(sp)
+    csrw mip, t0
+    ld t0, STACKSIZE-0x28(sp)
+    csrw mie, t0
+    ld t0, STACKSIZE-0x20(sp)
+    csrw mstatus, t0
+    ld t0, STACKSIZE-0x18(sp)
     csrw mepc, t0
+    ld t1, STACKSIZE-0x10(sp)
+    ld t0, STACKSIZE-0x8(sp)
 
     addi sp, sp, STACKSIZE
     mret
 
 #exception_s_addr:
+#.globl trap_s
 #trap_s:
     #call trap_supervisor
-    #sret               #移到entry.S了
+    #sret
