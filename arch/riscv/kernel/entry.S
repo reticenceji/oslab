@@ -8,7 +8,7 @@
 	addi sp,sp,8
     ld  \reg, 0(sp)
 .endm
-.equ SCAUSE_STI_MASK,0x20
+.equ SCAUSE_STI_MASK,0x5
 exception_s_addr:
 	PUSH x2			# 将原来的sp压栈
 	PUSH x1			
@@ -41,10 +41,10 @@ exception_s_addr:
 	PUSH x29
 	PUSH x30
 	PUSH x31
-    csrr t0, sstatus
-	PUSH t0
-    csrr t0, sepc
-   	PUSH t0							#保存所有的寄存器
+#    csrr t0, sstatus
+#	PUSH t0
+#    csrr t0, sepc
+#   	PUSH t0							#保存所有的寄存器
 
 	csrr t0,scause
 	blt t0,zero,interupt_table		#如果最高位是0，那么是中断。
@@ -57,10 +57,10 @@ interupt_table:
 
 return_s:
 	csrw sip,zero				#表示中断处理好了
-	POP t0
-	csrw sepc, t0 
-	POP t0
-	csrw sstatus,t0
+#	POP t0
+#	csrw sepc, t0 
+#	POP t0
+#	csrw sstatus,t0
 	POP x31
 	POP x30
 	POP x29
