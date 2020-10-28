@@ -33,14 +33,14 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     la t0, retaddr
     csrw mepc, t0               #设置mret的返回地址
     la t0, trap_m
-    slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位？
+# slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位？
     csrw mtvec, t0              #设置machine mode异常处理地址
     mret
     
 retaddr:
     la sp, stack_top
     la t0, exception_s_addr
-    slli t0, t0, 2
+# slli t0, t0, 2
     csrw stvec, t0              #设置supervisor mode异常处理地址
     call start_kernel
 #   wfi                         #Wait For Interrupt, 暂停等待中断
@@ -55,16 +55,7 @@ trap_m:
     addi sp, sp, -STACKSIZE
 
     sd t0, STACKSIZE-0x8(sp)
-    sd t1, STACKSIZE-0x10(sp)
-    csrr t0, mepc
-    sd t0, STACKSIZE-0x18(sp)
-    csrr t0, mstatus
-    sd t0, STACKSIZE-0x20(sp)
-    csrr t0, mie
-    sd t0, STACKSIZE-0x28(sp)
-    csrr t0, mip
-    sd t0, STACKSIZE-0x30(sp)
-    sd ra, STACKSIZE-0X38(sp)
+    sd t1, STACKSIZE-0X10(sp)
 
 #TIME INTERRUPT:
     csrr t0, mcause
@@ -86,17 +77,11 @@ ecall_handler_m:
     sd t1, 0(t0)                #mtimecmp += 100000
     li t0, 0x80
     csrs mie, t0                #mie[mtie] = 1
+    csrr t0, mepc
+    addi t0, t0, 4
+    csrw mepc, t0               #mepc += 4
 
 return_m:
-    ld ra, STACKSIZE-0x38(sp)
-    ld t0, STACKSIZE-0x30(sp)
-    csrw mip, t0
-    ld t0, STACKSIZE-0x28(sp)
-    csrw mie, t0
-    ld t0, STACKSIZE-0x20(sp)
-    csrw mstatus, t0
-    ld t0, STACKSIZE-0x18(sp)
-    csrw mepc, t0
     ld t1, STACKSIZE-0x10(sp)
     ld t0, STACKSIZE-0x8(sp)
 
