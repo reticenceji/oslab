@@ -1,5 +1,5 @@
 .section .text.entry
-.globl exception_s_addr
+.globl exception_addr_s
 .macro PUSH reg
     sd  \reg, 0(sp)
 	addi sp,sp,-8
@@ -9,7 +9,8 @@
     ld  \reg, 0(sp)
 .endm
 .equ SCAUSE_STI_MASK,0x5
-exception_s_addr:
+
+exception_addr_s:
 	PUSH x2			# 将原来的sp压栈
 	PUSH x1			
     PUSH x3
@@ -41,27 +42,27 @@ exception_s_addr:
 	PUSH x29
 	PUSH x30
 	PUSH x31
-#    csrr t0, sstatus
-#	PUSH t0
-#    csrr t0, sepc
-#   	PUSH t0							#保存所有的寄存器
+    csrr t0, sstatus
+	PUSH t0
+    csrr t0, sepc
+   	PUSH t0							#保存所有的寄存器
 
 	csrr t0,scause
-	blt t0,zero,interupt_table		#如果最高位是0，那么是中断。
-exception_table:					
+	blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
+exception_table_s:					
 
-interupt_table:
+interupt_table_s:
 	andi t1,t0,SCAUSE_STI_MASK		#对应于Supervisor timer interrupt
-	beq t1,zero,return_s
-	call sti_handler
-	j return_s	
+	beq t1,zero,exception_retaddr_s
+	call sti_handler_s
+	j exception_retaddr_s	
 
-return_s:
+exception_retaddr_s:
 	csrw sip,zero				#表示中断处理好了
-#	POP t0
-#	csrw sepc, t0 
-#	POP t0
-#	csrw sstatus,t0
+	POP t0
+	csrw sepc, t0 
+	POP t0
+	csrw sstatus,t0
 	POP x31
 	POP x30
 	POP x29
@@ -96,5 +97,3 @@ return_s:
 	ecall			#产生ecall_from_s_mode exception
 	sret			
 
-.bss
-count: .8byte 0
