@@ -28,6 +28,7 @@ run:
 	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux
 debug:
 	$(eval CFLAG += -g3)
+	@echo $(CFLAG)
 	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux -S -s
 #force and recursive remove all object files.
 #.PHONY表示伪目标，伪目标标记后的命令，不会和目录下文件重复。

@@ -52,8 +52,9 @@ exception_table:
 
 interupt_table:
 	andi t1,t0,SCAUSE_STI_MASK		#对应于Supervisor timer interrupt
-	bne t1,zero,sti_handler			
-	j return_s
+	beq t1,zero,return_s
+	call sti_handler
+	j return_s	
 
 return_s:
 	csrw sip,zero				#表示中断处理好了
@@ -94,3 +95,6 @@ return_s:
 	POP x2
 	ecall			#产生ecall_from_s_mode exception
 	sret			
+
+.bss
+count: .8byte 0
