@@ -1,5 +1,3 @@
-OUTPUT_ARCH(riscv)
-ENTRY(_start)
 BASE_ADDR = 0x80000000;
 SECTIONS
 {
@@ -9,19 +7,25 @@ SECTIONS
 	  *(.text.init)
 	  *(.text.entry)
       *(.text)
+      *(.text.*)
   }
 
   .rodata : {
       *(.rodata)
+      *(.rodata.*)
   }
 
   .data : {
       *(.data)
+      *(.data.*)
   }
 
   _bss_start = .;
   .bss : {
+      *(.sbss)
+      *(.sbss.*)
       *(.bss)
+      *(.bss.*)
   }
   _bss_end = .;
 

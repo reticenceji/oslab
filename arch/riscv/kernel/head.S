@@ -41,18 +41,14 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     la t0, _start_retaddr
     csrw mepc, t0               #设置mret的返回地址
     la t0, exception_addr_m
-# slli t0, t0, 2              #设置M mode Trap处理地址，为什么要左移两位？
     csrw mtvec, t0              #设置machine mode异常处理地址
     mret
     
 _start_retaddr:
     la sp, stack_top
     la t0, exception_addr_s
-# slli t0, t0, 2
     csrw stvec, t0              #设置supervisor mode异常处理地址
     call start_kernel
-#   wfi                         #Wait For Interrupt, 暂停等待中断
-
 
 #exception handlers
 .align 2
