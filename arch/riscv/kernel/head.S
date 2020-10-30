@@ -92,7 +92,14 @@ exception_addr_m:
 	PUSH x29
 	PUSH x30
 	PUSH x31
-
+	csrr t0, mstatus
+	PUSH t0
+    csrr t0, mcause
+    PUSH t0
+    csrr t0, mtval
+    PUSH t0
+    csrr t0, mepc
+    PUSH t0             #保存必要的CSR
 
     csrr t0, mcause
 	blt t0,zero,interupt_table_m		#如果最高位是0，那么是中断。
@@ -106,9 +113,11 @@ ecall_handler_m:            #I think the most optimum way is set mtvec[low]=1,us
     sd t1, 0(t0)                #mtimecmp += 100000
     li t0, 0x80
     csrs mie, t0                #mie[mtie] = 1
-    csrr t0, mepc
+    POP t0
     addi t0, t0, 4
-    csrw mepc, t0               #mepc += 4
+    csrw mepc,t0               #mepc += 4
+    li t0, 0x20
+    csrc mip,t0
     j exception_retaddr_m
 
 interupt_table_m:
@@ -117,9 +126,17 @@ mti_handler_m:
     csrc mie, t0                #mie[mtie] = 0
     li t0, 0x20
     csrs mip, t0                #mip[stip] = 1
+    POP t0
+    csrw mepc,t0
     j exception_retaddr_m
 
 exception_retaddr_m:
+	POP t0
+    csrw mtval, t0
+    POP t0
+    csrw mcause, t0
+    POP t0
+    csrw mstatus, t0
     POP x31
 	POP x30
 	POP x29

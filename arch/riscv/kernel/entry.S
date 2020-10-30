@@ -44,10 +44,14 @@ exception_addr_s:
 	PUSH x31
     csrr t0, sstatus
 	PUSH t0
+    csrr t0, scause
+    PUSH t0
+    csrr t0, stval
+    PUSH t0
     csrr t0, sepc
-   	PUSH t0							#保存所有的寄存器
-
-	csrr t0,scause
+    PUSH t0
+	
+    csrr t0,scause
 	blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
 exception_table_s:					
 
@@ -55,14 +59,19 @@ interupt_table_s:
 	andi t1,t0,SCAUSE_STI_MASK		#对应于Supervisor timer interrupt
 	beq t1,zero,exception_retaddr_s
 	call sti_handler_s
+    POP t0
+    csrw sepc, t0
 	j exception_retaddr_s	
 
 exception_retaddr_s:
-	csrw sip,zero				#表示中断处理好了
+#csrw sip,zero				#表示中断处理好了
+    
 	POP t0
-	csrw sepc, t0 
+	csrw stval, t0 
 	POP t0
-	csrw sstatus,t0
+	csrw scause,t0
+    POP t0
+    csrw sstatus, t0
 	POP x31
 	POP x30
 	POP x29
