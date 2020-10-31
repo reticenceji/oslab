@@ -8,7 +8,6 @@
 	addi sp,sp,8
     ld  \reg, 0(sp)
 .endm
-.equ STACKSIZE, 0x100            #栈帧大小
 .equ MTIME, 0x200bff8
 .equ MTIMECMP, 0x2004000
 
@@ -56,7 +55,6 @@ _start_retaddr:
 exception_addr_m:
 .globl exception_addr_m
 #save context     
-    addi sp, sp, -STACKSIZE
     PUSH x2			# 将原来的sp压栈
 	PUSH x1			
     PUSH x3
@@ -164,6 +162,5 @@ exception_retaddr_m:
 	POP x3
 	POP x1
 	POP x2
-    addi sp, sp, STACKSIZE
     mret
 
