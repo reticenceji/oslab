@@ -17,26 +17,26 @@ void task_init(void)
     #ifdef SJF
     for (int i=1; i < 5; i++)
     {
-        task[i] = (struct task_struct*)(0x80010000 + i*0x1000);
+        task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = rand();
         task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
-        task[i]->thread.sp = (unsigned long long)task[i] + 0x1000;
+        task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
     }
     #endif
 
     #ifdef PRIORITY
     for (int i=1; i < 5; i++)
     {
-        task[i] = (struct task_struct*)(0x80010000 + i*0x1000);
+        task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 8-i;
         task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
-        task[i]->thread.sp = (unsigned long long)task[i] + 0x1000;
+        task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
     }
     #endif
 }
