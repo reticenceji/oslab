@@ -1,3 +1,4 @@
+VPATH = ../../../lib
 all: head.o entry.o strap.o sched.o
 .PHONY: all
 
@@ -10,5 +11,5 @@ entry.o: entry.S strap.o
 strap.o: strap.c 
 	$(GCC) $(CFLAG) -c strap.c -o $@
 
-sched.o: sched.c
+sched.o: sched.c rand.o
 	$(GCC) $(CFLAG) -c sched.c -o $@
