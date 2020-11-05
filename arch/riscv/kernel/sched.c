@@ -112,8 +112,51 @@ void schedule(void)
 /* 切换当前任务current到下一个任务next */
 void switch_to(struct task_struct* next)
 {
-    return ;
+    if (next==current) return;
+    /* 参考链接https://www.cnblogs.com/byeyear/p/4675049.html，更详细的查看GCC文档吧
+     * __asm__(汇编语句模板: 输出部分: 输入部分: 破坏描述部分)  
+     * 汇编语句模板要在一个字符串内，语句中间用分号隔开
+     * %0对应& next->thread，%1对应& current->thread
+     * 那个“r"的意思是寄存器类型
+     * 看起来GCC没有xjb优化
+     */
+    __asm__(
+        "sd ra,0(%1) ;\
+         sd sp,8(%1) ;\
+         sd s0,16(%1) ;\
+         sd s1,24(%1) ;\
+         sd s2,32(%1) ;\
+         sd s3,40(%1) ;\
+         sd s4,48(%1) ;\
+         sd s5,56(%1) ;\
+         sd s6,64(%1) ;\
+         sd s7,72(%1) ;\
+         sd s8,80(%1) ;\
+         sd s9,88(%1) ;\
+         sd s10,96(%1) ;\
+         sd s11,104(%1) ;\
+         ld ra,0(%0) ;\
+         ld sp,8(%0) ;\
+         ld s0,16(%0) ;\
+         ld s1,24(%0) ;\
+         ld s2,32(%0) ;\
+         ld s3,40(%0) ;\
+         ld s4,48(%0) ;\
+         ld s5,56(%0) ;\
+         ld s6,64(%0) ;\
+         ld s7,72(%0) ;\
+         ld s8,80(%0) ;\
+         ld s9,88(%0) ;\
+         ld s10,96(%0) ;\
+         ld s11,104(%0) ;"
+        :
+        :"r"(& next->thread),"r"(& current->thread)
+    );
 }
 
 /* 死循环 */
-void dead_loop(void);
+void dead_loop(void)
+{
+    while (1);
+}
+    
