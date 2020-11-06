@@ -113,7 +113,30 @@ void schedule(void)
 
     #ifdef PROPRITY
     /* 优先级抢占式 */
-
+   struct task_struct **p;
+    long next;
+    p = &task[LAB_TEST_NUM];
+    next = LAB_TEST_NUM;
+    for( int i=LAB_TEST_NUM; i>0; i--)
+    {
+    	if((*p)->priority < task[i]->priority)//按时间决定next
+	{
+            p = &task[i];
+	    next = i;
+	}
+	if((*p)->priority = task[i]->priority)//时间相同按照剩余运行时间，不用=，因为是按照便利顺序。
+	{
+	    if((*p)->counter > task[i]->counter)
+	    {
+	        p = &task[i];
+	        next = i;        
+	    }
+	}
+    }
+    for( int i=LAB_TEST_NUM; i>0; i--)//重新分配task[1-4]优先级
+    {
+	task[i]->priority = rand();
+    }
     #endif
 
     switch_to(task[next]);                      //切换到新任务
