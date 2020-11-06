@@ -59,7 +59,17 @@ void do_timer(void)
     #endif
 
     #ifdef PRIORITY
-
+	schedule();
+	if(current->counter == 0)//重新为该进程分配运行时长
+    {
+ 	    for(int j = LAB_TEST_NUM; j > 0; j--)
+	    {
+		    if(task[j]->counter == 0)
+		    {
+			    task[j]->counter = 8-j;//current->counter = 8-j
+		    }
+	    }
+    }
     #endif
 }
 
