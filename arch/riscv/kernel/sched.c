@@ -59,8 +59,7 @@ void do_timer(void)
     #endif
 
     #ifdef PRIORITY
-	schedule();
-	if(current->counter == 0)//重新为该进程分配运行时长
+    if(current->counter == 0)//重新为该进程分配运行时长
     {
  	    for(int j = LAB_TEST_NUM; j > 0; j--)
 	    {
@@ -70,6 +69,7 @@ void do_timer(void)
 		    }
 	    }
     }
+    schedule();
     #endif
 }
 
@@ -125,7 +125,7 @@ void schedule(void)
             if (!*--p)
                 continue;
             //判断是否满足运行条件
-            if ((*p)->state == TASK_RUNNING && (*p)->counter >= 0 && ((*p)->priority > cnt1 || ((*p)->priority = cnt1 && (*p)->counter < cnt2)))
+            if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && ((*p)->priority > cnt1 || ((*p)->priority = cnt1 && (*p)->counter < cnt2)))
             {
                 cnt1 = (*p)->priority;
                 cnt2 = (*p)->counter;
