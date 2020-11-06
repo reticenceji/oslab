@@ -43,6 +43,7 @@ void task_init(void)
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
     }
     #endif
+    return;
 }
 
 /* 在时钟中断处理中被调用 */
@@ -59,7 +60,9 @@ void do_timer(void)
     #endif
 
     #ifdef PRIORITY
-
+    if (current->counter==0) 
+        current->counter = 8 - current->pid;
+    shcedule();
     #endif
 }
 
@@ -103,6 +106,7 @@ void schedule(void)
 
     #ifdef PROPRITY
     /* 优先级抢占式 */
+    
 
     #endif
 
