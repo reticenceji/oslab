@@ -7,7 +7,7 @@ int os_test()
 
     puts(msg);
 //	print("hello %s %d %c","world",10,'d');
-//	task_init();
+	task_init();
 	while(1) ;
 
     return 0;

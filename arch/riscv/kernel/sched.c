@@ -2,13 +2,13 @@
 #include "../../../include/rand.h"
 
 #define INF 1e9
-
 struct task_struct *current;
 struct task_struct *task[NR_TASKS];
 
 /* 进程初始化 创建四个dead_loop进程 */ 
 void task_init(void)
 {
+    print("task init...\n");
     current = (struct task_struct*)0x80010000;
     task[0] = current;
     task[0]->state = TASK_RUNNING;
@@ -17,7 +17,7 @@ void task_init(void)
     task[0]->blocked = 0;
     task[0]->pid = 0;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
-    
+//  task[0]->thread.ra = (unsigned long long)dead_loop;
     #ifdef SJF
     for (long long i=1; i < 5; i++)
     {
@@ -28,6 +28,8 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
+//      task[i]->thread.ra = (unsigned long long)dead_loop; 不应该改到这里
+        print("[PID = %d] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
     #endif
 
@@ -41,9 +43,10 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
+//      task[i]->thread.ra = (unsigned long long)dead_loop;
+        print("[PID = %d] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
     #endif
-    return;
 }
 
 /* 在时钟中断处理中被调用 */
@@ -52,7 +55,7 @@ void do_timer(void)
     (current->counter)--;
 
     #ifdef SJF
-    if (current->counter == 0)
+    if (current->counter <= 0)
     {
         schedule();
     }
@@ -60,13 +63,14 @@ void do_timer(void)
     #endif
 
     #ifdef PRIORITY
-    if(current->counter == 0)//重新为该进程分配运行时长
+    if(current->counter <= 0)//重新为该进程分配运行时长
     {
  	    for(int j = LAB_TEST_NUM; j > 0; j--)
 	    {
 		    if(task[j]->counter == 0)
 		    {
 			    task[j]->counter = 8-j;//current->counter = 8-j
+                print("[PID = %d] Reset counter = %d\n",j,8-j);
 		    }
 	    }
     }
@@ -104,6 +108,7 @@ void schedule(void)
             {
                 task[j]->counter = rand();      //重新赋值
             }
+            print("tasks' priority changed\n");
         }
         else
         {
@@ -173,6 +178,7 @@ void switch_to(struct task_struct* next)
      * 那个“r"的意思是寄存器类型
      * 看起来GCC没有xjb优化
      */
+    print("[!] Switch from task %d to task %d, prio: %d, counter: %d\n",current-task[0],next-task[0],next->priority,next->counter);
     __asm__(
         "sd ra,0(%1) ;\
          sd sp,8(%1) ;\
@@ -210,6 +216,6 @@ void switch_to(struct task_struct* next)
 /* 死循环 */
 void dead_loop(void)
 {
+    print("[PID = %d] Context Calculation: counter = %d\n",current->pid,current->counter);
     while (1);
 }
-    
