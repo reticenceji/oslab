@@ -126,7 +126,7 @@ void schedule(void)
             if (!*--p)
                 continue;
             //判断是否满足运行条件
-            if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && ((*p)->priority > cnt1 || ((*p)->priority = cnt1 && (*p)->counter < cnt2)))
+            if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && ((*p)->priority > cnt1 || ((*p)->priority == cnt1 && (*p)->counter < cnt2)))
             {
                 cnt1 = (*p)->priority;
                 cnt2 = (*p)->counter;
@@ -143,7 +143,7 @@ void schedule(void)
             p = &task[i];
 	    next = i;
 	}
-	if((*p)->priority = task[i]->priority)//时间相同按照剩余运行时间，不用=，因为是按照便利顺序。
+	if((*p)->priority == task[i]->priority)//时间相同按照剩余运行时间，不用=，因为是按照便利顺序。
 	{
 	    if((*p)->counter > task[i]->counter)
 	    {
