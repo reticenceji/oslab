@@ -1,9 +1,10 @@
 #include "sched.h"
 #include "../../../include/rand.h"
-
+#include "put.h"
 #define INF 1e9
 struct task_struct *current;
 struct task_struct *task[NR_TASKS];
+static void init_epc();
 
 /* 进程初始化 创建四个dead_loop进程 */ 
 void task_init(void)
@@ -17,7 +18,7 @@ void task_init(void)
     task[0]->blocked = 0;
     task[0]->pid = 0;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
-//  task[0]->thread.ra = (unsigned long long)dead_loop;
+    task[0]->thread.ra = (unsigned long long)init_epc;
     #ifdef SJF
     for (long long i=1; i < 5; i++)
     {
@@ -28,8 +29,8 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
-//      task[i]->thread.ra = (unsigned long long)dead_loop; 不应该改到这里
-        print("[PID = %d] Process Create Successfully! counter = %d\n",i,task[i]->counter);
+        task[i]->thread.ra = (unsigned long long)init_epc;
+        print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
     #endif
 
@@ -43,8 +44,8 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
-//      task[i]->thread.ra = (unsigned long long)dead_loop;
-        print("[PID = %d] Process Create Successfully! counter = %d\n",i,task[i]->counter);
+        task[i]->thread.ra = (unsigned long long)init_epc;
+        print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
     #endif
 }
@@ -178,7 +179,7 @@ void switch_to(struct task_struct* next)
      * 那个“r"的意思是寄存器类型
      * 看起来GCC没有xjb优化
      */
-    print("[!] Switch from task %d to task %d, prio: %d, counter: %d\n",current-task[0],next-task[0],next->priority,next->counter);
+    print("[!] Switch from task %d to task %d, prio: %l, counter: %l\n",current-task[0],next-task[0],next->priority,next->counter);
     __asm__(
         "sd ra,0(%1) ;\
          sd sp,8(%1) ;\
@@ -207,7 +208,8 @@ void switch_to(struct task_struct* next)
          ld s8,80(%0) ;\
          ld s9,88(%0) ;\
          ld s10,96(%0) ;\
-         ld s11,104(%0) ;"
+         ld s11,104(%0) ;\
+         ret;"
         :
         :"r"(& next->thread),"r"(& current->thread)
     );
@@ -216,6 +218,13 @@ void switch_to(struct task_struct* next)
 /* 死循环 */
 void dead_loop(void)
 {
-    print("[PID = %d] Context Calculation: counter = %d\n",current->pid,current->counter);
+    print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     while (1);
+}
+
+static void init_epc(){
+    __asm__(
+        "csrw sepc,%0;"
+        :
+        :"r"(dead_loop));
 }

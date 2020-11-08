@@ -54,8 +54,12 @@ void print(const char *fmt, ...)
                     s = va_arg(ap, char *);
                     puts(s);
                     break;
-            case 'd': /* 数字 */
+            case 'd': /* 数字int */
                     d = va_arg(ap, int);
+                    puti(d);
+                    break;
+            case 'l': /* 数字long */
+                    d = va_arg(ap, long);
                     puti(d);
                     break;
             case 'c': /* 字符 */
