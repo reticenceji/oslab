@@ -23,7 +23,7 @@ subsystem:
 
 .PHONY: clean run debug
 clean:
-	find -name "*.o"  | xargs rm -fv && rm -v vmlinux System.map arch/riscv/boot/Image
+	find -name "*.o"  | xargs rm -fv && rm -v vmlinux System.map arch/riscv/boot/Image && find -name ".*.swp" | xargs rm -fv
 run:
 	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux
 debug:

@@ -190,7 +190,6 @@ void switch_to(struct task_struct* next)
      * 那个“r"的意思是寄存器类型
      * 看起来GCC没有xjb优化
      */
-    print("[!] Switch from task %d to task %d, prio: %l, counter: %l\n",current->pid,next->pid,next->priority,next->counter);
     struct task_struct *prev = current;
     current = next;
     __asm__(
@@ -221,11 +220,12 @@ void switch_to(struct task_struct* next)
          ld s8,80(%0);\
          ld s9,88(%0);\
          ld s10,96(%0);\
-         ld s11,104(%0);\
-         ret"
+         ld s11,104(%0);"
         :
-        :"r"(& current->thread),"r"(& prev->thread),"r"(next), "r"(current)
+        :"r"(& current->thread),"r"(& prev->thread)
     );
+    print("[!] Switch from task %d to task %d, prio: %l, counter: %l\n",prev->pid,current->pid,current->priority,current->counter);
+    return ;
 }
 
 /* 死循环 */
