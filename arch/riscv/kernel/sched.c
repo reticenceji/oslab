@@ -14,13 +14,13 @@ void task_init(void)
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->counter = 0;
-    task[0]->priority = 5;
+    task[0]->priority = LAB_TEST_COUNTER;
     task[0]->blocked = 0;
     task[0]->pid = 0;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
-    task[0]->thread.ra = (unsigned long long)init_epc;
+    //task[0]->thread.ra = (unsigned long long)init_epc;
     #ifdef SJF
-    for (long long i=1; i < 5; i++)
+    for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
         task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
@@ -32,10 +32,11 @@ void task_init(void)
         task[i]->thread.ra = (unsigned long long)init_epc;
         print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
+    init_epc();
     #endif
 
     #ifdef PRIORITY
-    for (long long i=1; i < 5; i++)
+    for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
         task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
@@ -45,8 +46,9 @@ void task_init(void)
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
         task[i]->thread.ra = (unsigned long long)init_epc;
-        print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
+        print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
     }
+    init_epc();
     #endif
 }
 
@@ -60,6 +62,7 @@ void do_timer(void)
     {
         schedule();
     }
+    print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     return ;
     #endif
 
@@ -87,60 +90,66 @@ void schedule(void)
     long next;
     while (1)
     {
-	p = &task[LAB_TEST_NUM];
-        long cnt = (*p)->counter, i = LAB_TEST_NUM;
+    	p = &task[LAB_TEST_NUM];
+        long cnt = (*p)->counter, i = LAB_TEST_NUM+1;
         next = 0;
         while (--i)
         {
-            if (!*--p)
+            if (!(*p))
+            {
+                --p;
                 continue;
+            }
             //判断是否满足运行条件
             if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && (*p)->counter <= cnt)
             {
                 cnt = (*p)->counter;
                 next = i;
             }
+            --p;
         }
         //如果cnt和next都没有被更新过，即没有符合要求的进程 (本实验中即所有counter均为0)
-        //如果task[LAB_TEST_NUM-1]是应该被运行的进程，那么next会被更新，不会触发该条件
-        if (cnt == task[LAB_TEST_NUM-1]->counter && next == 0)
+        //如果task[LAB_TEST_NUM]是应该被运行的进程，那么next会被更新，不会触发该条件
+        if (cnt == task[LAB_TEST_NUM]->counter && next == 0)
         {
-            for (int j = LAB_TEST_NUM-1; j > 0; j--)
+            for (int j = LAB_TEST_NUM; j > 0; j--)
             {
                 task[j]->counter = rand();      //重新赋值
             }
-            print("tasks' priority changed\n");
         }
         else
         {
             break;
         }
     }
+    switch_to(task[next]);
     #endif
 
-     #ifdef PROPRITY
+    #ifdef PROPRITY
     /* 优先级抢占式 */
     struct task_struct **p;
-    long next;
+    long next, i;
     p = &task[LAB_TEST_NUM];
     next = LAB_TEST_NUM;
-    i = LAB_TEST_NUM;
+    i = LAB_TEST_NUM + 1;
     long cnt1 = (*p)->priority;
     long cnt2 = (*p)->counter;
     while (--i)
+    {
+        if (!(*p))
         {
-            if (!*--p)
-                continue;
-            //判断是否满足运行条件
-            if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && ((*p)->priority > cnt1 || ((*p)->priority == cnt1 && (*p)->counter < cnt2)))
-            {
-                cnt1 = (*p)->priority;
-                cnt2 = (*p)->counter;
-                next = i;
-            }
+            --p;
+            continue;
         }
-
-
+        //判断是否满足运行条件
+        if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && ((*p)->priority > cnt1 || ((*p)->priority == cnt1 && (*p)->counter < cnt2)))
+        {
+            cnt1 = (*p)->priority;
+            cnt2 = (*p)->counter;
+            next = i;
+        }
+        --p;
+    }
 
 /*    for( int i=LAB_TEST_NUM; i>0; i--)
     {
@@ -161,11 +170,12 @@ void schedule(void)
 */
     for( int i=LAB_TEST_NUM; i>0; i--)//重新分配task[1-4]优先级
     {
-	task[i]->priority = rand();
+	    task[i]->priority = rand();
     }
-    #endif
+     print("tasks' priority changed\n");
+     switch_to(task[next]);                      //切换到新任务
 
-    switch_to(task[next]);                      //切换到新任务
+     #endif
 }
 
 /* 切换当前任务current到下一个任务next */
@@ -179,39 +189,41 @@ void switch_to(struct task_struct* next)
      * 那个“r"的意思是寄存器类型
      * 看起来GCC没有xjb优化
      */
-    print("[!] Switch from task %d to task %d, prio: %l, counter: %l\n",current-task[0],next-task[0],next->priority,next->counter);
+    print("[!] Switch from task %d to task %d, prio: %l, counter: %l\n",current->pid,next->pid,next->priority,next->counter);
+    struct task_struct *prev = current;
+    current = next;
     __asm__(
-        "sd ra,0(%1) ;\
-         sd sp,8(%1) ;\
-         sd s0,16(%1) ;\
-         sd s1,24(%1) ;\
-         sd s2,32(%1) ;\
-         sd s3,40(%1) ;\
-         sd s4,48(%1) ;\
-         sd s5,56(%1) ;\
-         sd s6,64(%1) ;\
-         sd s7,72(%1) ;\
-         sd s8,80(%1) ;\
-         sd s9,88(%1) ;\
-         sd s10,96(%1) ;\
-         sd s11,104(%1) ;\
-         ld ra,0(%0) ;\
-         ld sp,8(%0) ;\
-         ld s0,16(%0) ;\
-         ld s1,24(%0) ;\
-         ld s2,32(%0) ;\
-         ld s3,40(%0) ;\
-         ld s4,48(%0) ;\
-         ld s5,56(%0) ;\
-         ld s6,64(%0) ;\
-         ld s7,72(%0) ;\
-         ld s8,80(%0) ;\
-         ld s9,88(%0) ;\
-         ld s10,96(%0) ;\
-         ld s11,104(%0) ;\
-         ret;"
+        "sd ra,0(%1);\
+         sd sp,8(%1);\
+         sd s0,16(%1);\
+         sd s1,24(%1);\
+         sd s2,32(%1);\
+         sd s3,40(%1);\
+         sd s4,48(%1);\
+         sd s5,56(%1);\
+         sd s6,64(%1);\
+         sd s7,72(%1);\
+         sd s8,80(%1);\
+         sd s9,88(%1);\
+         sd s10,96(%1);\
+         sd s11,104(%1);\
+         ld ra,0(%0);\
+         ld sp,8(%0);\
+         ld s0,16(%0);\
+         ld s1,24(%0);\
+         ld s2,32(%0);\
+         ld s3,40(%0);\
+         ld s4,48(%0);\
+         ld s5,56(%0);\
+         ld s6,64(%0);\
+         ld s7,72(%0);\
+         ld s8,80(%0);\
+         ld s9,88(%0);\
+         ld s10,96(%0);\
+         ld s11,104(%0);\
+         ret"
         :
-        :"r"(& next->thread),"r"(& current->thread)
+        :"r"(& current->thread),"r"(& prev->thread),"r"(next), "r"(current)
     );
 }
 
@@ -224,7 +236,8 @@ void dead_loop(void)
 
 static void init_epc(){
     __asm__(
-        "csrw sepc,%0;"
+        "csrw sepc,%0;\
+         sret;"
         :
         :"r"(dead_loop));
 }
