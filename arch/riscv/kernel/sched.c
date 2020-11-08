@@ -91,7 +91,7 @@ void schedule(void)
     while (1)
     {
     	p = &task[LAB_TEST_NUM];
-        long cnt = (*p)->counter, i = LAB_TEST_NUM+1;
+        long cnt = INF, i = LAB_TEST_NUM+1;
         next = 0;
         while (--i)
         {
@@ -101,7 +101,7 @@ void schedule(void)
                 continue;
             }
             //判断是否满足运行条件
-            if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && (*p)->counter <= cnt)
+            if ((*p)->state == TASK_RUNNING && (*p)->counter > 0 && (*p)->counter < cnt)
             {
                 cnt = (*p)->counter;
                 next = i;
@@ -110,11 +110,12 @@ void schedule(void)
         }
         //如果cnt和next都没有被更新过，即没有符合要求的进程 (本实验中即所有counter均为0)
         //如果task[LAB_TEST_NUM]是应该被运行的进程，那么next会被更新，不会触发该条件
-        if (cnt == task[LAB_TEST_NUM]->counter && next == 0)
+        if (cnt == INF && next == 0)
         {
-            for (int j = LAB_TEST_NUM; j > 0; j--)
+            for (int j = 1; j <= LAB_TEST_NUM; j++)
             {
                 task[j]->counter = rand();      //重新赋值
+                print("[PID = %d] Reset counter = %d\n",task[j]->pid,task[j]->counter);
             }
         }
         else

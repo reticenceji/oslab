@@ -1,12 +1,12 @@
 .section .text.init
 .globl _start
 .macro PUSH reg
-    sd  \reg, 0(sp)
 	addi sp,sp,-8
+    sd  \reg, 0(sp)
 .endm				#宏
 .macro POP reg
-	addi sp,sp,8
     ld  \reg, 0(sp)
+	addi sp,sp,8
 .endm
 .equ MTIME, 0x200bff8
 .equ MTIMECMP, 0x2004000

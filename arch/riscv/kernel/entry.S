@@ -1,12 +1,12 @@
 .section .text.entry
 .globl exception_addr_s
 .macro PUSH reg
-    sd  \reg, 0(sp)
-	addi sp,sp,-8
+    addi sp,sp,-8
+    sd \reg,0(sp)
 .endm				#宏
 .macro POP reg
-	addi sp,sp,8
-    ld  \reg, 0(sp)
+    ld \reg,0(sp)
+    addi sp,sp,8
 .endm
 .equ SCAUSE_STI_MASK,0x5
 
