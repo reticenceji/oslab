@@ -79,6 +79,7 @@ void do_timer(void)
 	    }
     }
     schedule();
+    return ;
     #endif
 }
 
@@ -126,7 +127,7 @@ void schedule(void)
     switch_to(task[next]);
     #endif
 
-    #ifdef PROPRITY
+    #ifdef PRIORITY
     /* 优先级抢占式 */
     struct task_struct **p;
     long next, i;
@@ -169,11 +170,16 @@ void schedule(void)
 	}
     }
 */
-    for( int i=LAB_TEST_NUM; i>0; i--)//重新分配task[1-4]优先级
+    if(current != task[0])
     {
+	print("tasks' priority changed\n");
+        for( int i=1; i<LAB_TEST_NUM+1; i++)//重新分配task[1-4]优先级
+        {
 	    task[i]->priority = rand();
+            print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
+        }
+            
     }
-     print("tasks' priority changed\n");
      switch_to(task[next]);                      //切换到新任务
 
      #endif
@@ -230,8 +236,11 @@ void switch_to(struct task_struct* next)
 
 /* 死循环 */
 void dead_loop(void)
-{
+{   
+    #ifdef SJF
     print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
+    #endif
+    //print("aaaaa\n");
     while (1);
 }
 
