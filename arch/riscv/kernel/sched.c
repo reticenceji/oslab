@@ -55,9 +55,8 @@ void task_init(void)
 /* 在时钟中断处理中被调用 */
 void do_timer(void)
 {
-    (current->counter)--;
-
     #ifdef SJF
+    (current->counter)--;
     if (current->counter <= 0)
     {
         schedule();
@@ -67,17 +66,6 @@ void do_timer(void)
     #endif
 
     #ifdef PRIORITY
-    if(current->counter <= 0)//重新为该进程分配运行时长
-    {
- 	    for(int j = LAB_TEST_NUM; j > 0; j--)
-	    {
-		    if(task[j]->counter == 0)
-		    {
-			    task[j]->counter = 8-j;//current->counter = 8-j
-                print("[PID = %d] Reset counter = %d\n",j,8-j);
-		    }
-	    }
-    }
     schedule();
     return ;
     #endif
@@ -129,6 +117,7 @@ void schedule(void)
 
     #ifdef PRIORITY
     /* 优先级抢占式 */
+
     if(current != task[0])
     {
 	print("tasks' priority changed\n");
@@ -138,6 +127,19 @@ void schedule(void)
             print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
         }
             
+    }
+ 
+    (current->counter)--;
+        if(current->counter <= 0)//重新为该进程分配运行时长
+    {
+ 	    for(int j = LAB_TEST_NUM; j > 0; j--)
+	    {
+		    if(task[j]->counter == 0 )//&& current == task[j]
+		    {
+			    task[j]->counter = 8-j;//current->counter = 8-j
+                print("[PID = %d] Reset counter = %d\n",j,8-j);
+		    }
+	    }
     }
 
     struct task_struct **p;
@@ -163,24 +165,6 @@ void schedule(void)
         }
         --p;
     }
-
-/*    for( int i=LAB_TEST_NUM; i>0; i--)
-    {
-    	if((*p)->priority < task[i]->priority)//按时间决定next
-	{
-            p = &task[i];
-	    next = i;
-	}
-	if((*p)->priority == task[i]->priority)//时间相同按照剩余运行时间，不用=，因为是按照便利顺序。
-	{
-	    if((*p)->counter > task[i]->counter)
-	    {
-	        p = &task[i];
-	        next = i;        
-	    }
-	}
-    }
-*/
 
      switch_to(task[next]);                      //切换到新任务
 
