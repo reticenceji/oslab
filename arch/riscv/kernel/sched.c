@@ -18,7 +18,6 @@ void task_init(void)
     task[0]->blocked = 0;
     task[0]->pid = 0;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
-    //task[0]->thread.ra = (unsigned long long)init_epc;
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
@@ -134,9 +133,9 @@ void schedule(void)
     {
  	    for(int j = LAB_TEST_NUM; j > 0; j--)
 	    {
-		    if(task[j]->counter == 0 )//&& current == task[j]
+		    if(task[j]->counter == 0 )
 		    {
-			    task[j]->counter = 8-j;//current->counter = 8-j
+			    task[j]->counter = 8-j;
                 print("[PID = %d] Reset counter = %d\n",j,8-j);
 		    }
 	    }
@@ -226,7 +225,6 @@ void dead_loop(void)
     #ifdef SJF
     print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     #endif
-    //print("aaaaa\n");
     while (1);
 }
 
