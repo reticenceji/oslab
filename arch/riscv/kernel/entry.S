@@ -61,7 +61,9 @@ interupt_table_s:
 	call sti_handler_s
     POP t0
     csrw sepc, t0
-	j exception_retaddr_s	
+	ecall			#产生ecall_from_s_mode exception
+	j exception_retaddr_s
+	
 
 exception_retaddr_s:
 #csrw sip,zero				#表示中断处理好了
@@ -103,6 +105,5 @@ exception_retaddr_s:
 	POP x3
 	POP x1
 	POP x2
-	ecall			#产生ecall_from_s_mode exception
-	sret			
 
+	sret			
