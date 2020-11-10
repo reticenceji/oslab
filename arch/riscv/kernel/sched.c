@@ -74,8 +74,8 @@ void do_timer(void)
 
 void schedule(void)
 {
-    #ifdef SJF
     /* 短作业优先式调度程序 */
+    #ifdef SJF
     struct task_struct **p;
     long next;
     while (1)
@@ -116,9 +116,9 @@ void schedule(void)
     switch_to(task[next]);
     #endif
 
+    /* 优先级抢占式调度程序 */
     #ifdef PRIORITY
-    /* 优先级抢占式 */
-        if(current->counter <= 0)//重新为该进程分配运行时长
+    if(current->counter <= 0)//重新为该进程分配运行时长
     {
  	    for(int j = LAB_TEST_NUM; j > 0; j--) 
 	    {
@@ -129,15 +129,6 @@ void schedule(void)
 		    }
 	    }
     }
-
-   // if(current != task[0])
-   // {
-
-           
-   // }
- 
-
-
     struct task_struct **p;
     long next, i;
     p = &task[LAB_TEST_NUM];
@@ -168,70 +159,65 @@ void schedule(void)
 			break;
 	}
 	if(current_number != next){
-	print(" [!]Switch from task %d to task %d, prio: %d, counter: %d\n", current_number, next, task[next]->priority, task[next]->counter);
+	    print(" [!]Switch from task %d to task %d, prio: %d, counter: %d\n", current_number, next, task[next]->priority, task[next]->counter);
 	}
-//if(current != task[0]){
 	print("tasks' priority changed\n");
-        for( int i=1; i<LAB_TEST_NUM+1; i++)//重新分配task[1-4]优先级
-        {   //if(current != task[0]){
-            task[i]->priority = rand();
-            print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
-            //}
-            
-        }
-
-     switch_to(task[next]);                      //切换到新任务
-
-     #endif
+    for( int i=1; i<LAB_TEST_NUM+1; i++)//重新分配task[1-4]优先级
+    {   
+        task[i]->priority = rand();
+        print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);    
+    }
+    switch_to(task[next]);                      //切换到新任务
+    #endif
 }
 
 /* 切换当前任务current到下一个任务next */
 void switch_to(struct task_struct* next)
 {
     if (next==current) return;
-   struct task_struct *prev = current;
+    struct task_struct *prev = current;
     current = next;
-    /* 参考链接https://www.cnblogs.com/byeyear/p/4675049.html，更详细的查看GCC文档吧
+    /* 内联汇编参考链接https://www.cnblogs.com/byeyear/p/4675049.html，更详细的查看GCC文档吧
      * __asm__(汇编语句模板: 输出部分: 输入部分: 破坏描述部分)  
      * 汇编语句模板要在一个字符串内，语句中间用分号隔开
      * %0对应& next->thread，%1对应& current->thread
      * 那个“r"的意思是寄存器类型
-     * 看起来GCC没有xjb优化
      */
     __asm__ __volatile__(
-        "sd ra,0(%1);\
-         sd sp,8(%1);\
-         sd s0,16(%1);\
-         sd s1,24(%1);\
-         sd s2,32(%1);\
-         sd s3,40(%1);\
-         sd s4,48(%1);\
-         sd s5,56(%1);\
-         sd s6,64(%1);\
-         sd s7,72(%1);\
-         sd s8,80(%1);\
-         sd s9,88(%1);\
-         sd s10,96(%1);\
-         sd s11,104(%1);\
-         ld ra,0(%0);\
-         ld sp,8(%0);\
-         ld s0,16(%0);\
-         ld s1,24(%0);\
-         ld s2,32(%0);\
-         ld s3,40(%0);\
-         ld s4,48(%0);\
-         ld s5,56(%0);\
-         ld s6,64(%0);\
-         ld s7,72(%0);\
-         ld s8,80(%0);\
-         ld s9,88(%0);\
-         ld s10,96(%0);\
-         ld s11,104(%0);"
+        "sd ra,0(%1);"
+        "sd sp,8(%1);"
+        "sd s0,16(%1);"
+        "sd s1,24(%1);"
+        "sd s2,32(%1);"
+        "sd s3,40(%1);"
+        "sd s4,48(%1);"
+        "sd s5,56(%1);"
+        "sd s6,64(%1);"
+        "sd s7,72(%1);"
+        "sd s8,80(%1);"
+        "sd s9,88(%1);"
+        "sd s10,96(%1);"
+        "sd s11,104(%1);"
+        "ld ra,0(%0);"
+        "ld sp,8(%0);"
+        "ld s0,16(%0);"
+        "ld s1,24(%0);"
+        "ld s2,32(%0);"
+        "ld s3,40(%0);"
+        "ld s4,48(%0);"
+        "ld s5,56(%0);"
+        "ld s6,64(%0);"
+        "ld s7,72(%0);"
+        "ld s8,80(%0);"
+        "ld s9,88(%0);"
+        "ld s10,96(%0);"
+        "ld s11,104(%0);"
         :
         :"r"(& current->thread),"r"(& prev->thread)
     );
 	#ifdef SJF
-        print(" [!]Switch from task %d to task %d, prio: %l, counter: %l\n",prev->pid,current->pid,current->priority,current->counter);
+    /* 因为这是尾调用，我们不需要把ra入栈 */
+    print(" [!]Switch from task %d to task %d, prio: %l, counter: %l\n",prev->pid,current->pid,current->priority,current->counter);
 	#endif
     return ;
 }
@@ -242,7 +228,6 @@ void dead_loop(void)
     #ifdef SJF
     print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     #endif
-    //print("LOOP\n");
     while (1);
 }
 

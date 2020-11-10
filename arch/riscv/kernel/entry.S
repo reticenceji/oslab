@@ -11,6 +11,7 @@
 .equ SCAUSE_STI_MASK,0x5
 
 exception_addr_s:
+	#保存所有的寄存器
 	PUSH x2			# 将原来的sp压栈
 	PUSH x1			
     PUSH x3
@@ -56,18 +57,16 @@ exception_addr_s:
 exception_table_s:					
 
 interupt_table_s:
-	andi t1,t0,SCAUSE_STI_MASK		#对应于Supervisor timer interrupt
+	andi t1,t0,SCAUSE_STI_MASK			#对应于Supervisor timer interrupt
 	beq t1,zero,exception_retaddr_s
 	call sti_handler_s
     POP t0
     csrw sepc, t0
-	ecall			#产生ecall_from_s_mode exception
+	ecall								#产生ecall_from_s_mode exception，重新设置mtimecmp
 	j exception_retaddr_s
 	
-
-exception_retaddr_s:
-#csrw sip,zero				#表示中断处理好了
-    
+exception_retaddr_s:							
+	#恢复所有的寄存器
 	POP t0
 	csrw stval, t0 
 	POP t0

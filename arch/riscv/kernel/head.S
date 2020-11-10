@@ -20,7 +20,7 @@ loop_clear_bss:
     addi t0, t0, 1
     j loop_clear_bss 
 done_clear_bss:                 #循环的将.bss段内容设置为0
-                                #必须clear bss 的原因
+                               
     li t0, MTIME
     ld t0, 0(t0)
     li t1, 1000000
@@ -55,7 +55,7 @@ _start_retaddr:
 exception_addr_m:
 .globl exception_addr_m
 #save context     
-    PUSH x2			# 将原来的sp压栈
+    PUSH x2			            # 将原来的sp压栈
 	PUSH x1			
     PUSH x3
 	PUSH x4
@@ -93,10 +93,10 @@ exception_addr_m:
     csrr t0, mtval
     PUSH t0
     csrr t0, mepc
-    PUSH t0             #保存必要的CSR
+    PUSH t0                         #保存必要的CSR
 
     csrr t0, mcause
-	blt t0,zero,interupt_table_m		#如果最高位是0，那么是中断。
+	blt t0,zero,interupt_table_m	#如果最高位是0，那么是中断。
 exception_table_m:
 ecall_handler_m:            #I think the most optimum way is set mtvec[low]=1,use jump table
     li t1, MTIMECMP
@@ -104,12 +104,12 @@ ecall_handler_m:            #I think the most optimum way is set mtvec[low]=1,us
     li t0, 100000
     add t1, t1, t0
     li t0, MTIMECMP
-    sd t1, 0(t0)                #mtimecmp += 100000
+    sd t1, 0(t0)                    #mtimecmp += 100000
     li t0, 0x80
-    csrs mie, t0                #mie[mtie] = 1
+    csrs mie, t0                    #mie[mtie] = 1
     POP t0
     addi t0, t0, 4
-    csrw mepc,t0               #mepc += 4
+    csrw mepc,t0                    #mepc += 4
     li t0, 0x20
     csrc mip,t0
     j exception_retaddr_m
@@ -117,9 +117,9 @@ ecall_handler_m:            #I think the most optimum way is set mtvec[low]=1,us
 interupt_table_m:
 mti_handler_m:
     li t0, 0x80
-    csrc mie, t0                #mie[mtie] = 0
+    csrc mie, t0                    #mie[mtie] = 0
     li t0, 0x20
-    csrs mip, t0                #mip[stip] = 1
+    csrs mip, t0                    #mip[stip] = 1
     POP t0
     csrw mepc,t0
     j exception_retaddr_m
