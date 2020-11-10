@@ -177,7 +177,7 @@ void schedule(void)
 void switch_to(struct task_struct* next)
 {
     if (next==current) return;
-    struct task_struct *prev = current;
+    register struct task_struct *prev = current;
     current = next;
     __switch_to(& current->thread,& prev->thread);
 }
