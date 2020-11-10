@@ -72,6 +72,7 @@ void do_timer(void);
 void schedule(void);
 
 /* 切换当前任务current到下一个任务next */
+extern struct thread_struct* __switch_to(struct thread_struct* current,struct thread_struct* prev);
 void switch_to(struct task_struct* next);
 
 /* 死循环 */
