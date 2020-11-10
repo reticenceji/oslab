@@ -18,6 +18,7 @@ void task_init(void)
     task[0]->blocked = 0;
     task[0]->pid = 0;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
+    //task[0]->thread.ra = (unsigned long long)init_epc;
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
@@ -54,8 +55,9 @@ void task_init(void)
 /* 在时钟中断处理中被调用 */
 void do_timer(void)
 {
-    #ifdef SJF
     (current->counter)--;
+    #ifdef SJF
+
     if (current->counter <= 0)
     {
         schedule();
@@ -116,30 +118,25 @@ void schedule(void)
 
     #ifdef PRIORITY
     /* 优先级抢占式 */
-
-    if(current != task[0])
-    {
-	print("tasks' priority changed\n");
-        for( int i=1; i<LAB_TEST_NUM+1; i++)//重新分配task[1-4]优先级
-        {
-	    task[i]->priority = rand();
-            print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
-        }
-            
-    }
- 
-    (current->counter)--;
         if(current->counter <= 0)//重新为该进程分配运行时长
     {
- 	    for(int j = LAB_TEST_NUM; j > 0; j--)
+ 	    for(int j = LAB_TEST_NUM; j > 0; j--) 
 	    {
-		    if(task[j]->counter == 0 )
+		    if(task[j]->counter == 0 )//&& current == task[j]
 		    {
-			    task[j]->counter = 8-j;
+			    task[j]->counter = 8-j;//current->counter = 8-j
                 print("[PID = %d] Reset counter = %d\n",j,8-j);
 		    }
 	    }
     }
+
+   // if(current != task[0])
+   // {
+
+           
+   // }
+ 
+
 
     struct task_struct **p;
     long next, i;
@@ -164,6 +161,24 @@ void schedule(void)
         }
         --p;
     }
+	static int current_number=0;
+	for(current_number=0;current_number<LAB_TEST_NUM;current_number++)
+	{
+		if(current == task[current_number])
+			break;
+	}
+	if(current_number != next){
+	print(" [!]Switch from task %d to task %d, prio: %d, counter: %d\n", current_number, next, task[next]->priority, task[next]->counter);
+	}
+//if(current != task[0]){
+	print("tasks' priority changed\n");
+        for( int i=1; i<LAB_TEST_NUM+1; i++)//重新分配task[1-4]优先级
+        {   //if(current != task[0]){
+            task[i]->priority = rand();
+            print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
+            //}
+            
+        }
 
      switch_to(task[next]);                      //切换到新任务
 
@@ -174,6 +189,8 @@ void schedule(void)
 void switch_to(struct task_struct* next)
 {
     if (next==current) return;
+   struct task_struct *prev = current;
+    current = next;
     /* 参考链接https://www.cnblogs.com/byeyear/p/4675049.html，更详细的查看GCC文档吧
      * __asm__(汇编语句模板: 输出部分: 输入部分: 破坏描述部分)  
      * 汇编语句模板要在一个字符串内，语句中间用分号隔开
@@ -181,9 +198,7 @@ void switch_to(struct task_struct* next)
      * 那个“r"的意思是寄存器类型
      * 看起来GCC没有xjb优化
      */
-    struct task_struct *prev = current;
-    current = next;
-    __asm__(
+    __asm__ __volatile__(
         "sd ra,0(%1);\
          sd sp,8(%1);\
          sd s0,16(%1);\
@@ -215,7 +230,9 @@ void switch_to(struct task_struct* next)
         :
         :"r"(& current->thread),"r"(& prev->thread)
     );
-    print("[!] Switch from task %d to task %d, prio: %l, counter: %l\n",prev->pid,current->pid,current->priority,current->counter);
+	#ifdef SJF
+        print(" [!]Switch from task %d to task %d, prio: %l, counter: %l\n",prev->pid,current->pid,current->priority,current->counter);
+	#endif
     return ;
 }
 
@@ -225,11 +242,12 @@ void dead_loop(void)
     #ifdef SJF
     print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     #endif
+    //print("LOOP\n");
     while (1);
 }
 
 static void init_epc(){
-    __asm__(
+    __asm__ __volatile__(
         "csrw sepc,%0;\
          sret;"
         :
