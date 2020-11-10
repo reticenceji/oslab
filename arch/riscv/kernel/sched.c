@@ -25,7 +25,7 @@ void task_init(void)
         task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = rand();
-        task[i]->priority = 5;
+        task[i]->priority = LAB_TEST_COUNTER;
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
@@ -40,8 +40,8 @@ void task_init(void)
     {
         task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
-        task[i]->counter = 8-i;
-        task[i]->priority = 5;
+        task[i]->counter = 7-(i-1)%4;
+        task[i]->priority = LAB_TEST_COUNTER;
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
@@ -126,8 +126,8 @@ void schedule(void)
 	    {
 		    if(task[j]->counter == 0 )//&& current == task[j]
 		    {
-			    task[j]->counter = 8-j;//current->counter = 8-j
-                print("[PID = %d] Reset counter = %d\n",j,8-j);
+			    task[j]->counter = 7-(j-1)%4;//current->counter = 7-(j-1)%4
+                print("[PID = %d] Reset counter = %d\n",j,7-(j-1)%4);
 		    }
 	    }
     }
@@ -155,7 +155,7 @@ void schedule(void)
         --p;
     }
 	static int current_number=0;
-	for(current_number=0;current_number<LAB_TEST_NUM;current_number++)
+	for(current_number = 0; current_number <= LAB_TEST_NUM; current_number++)
 	{
 		if(current == task[current_number])
 			break;
@@ -164,7 +164,7 @@ void schedule(void)
 	    print("[!]Switch from task %d to task %d, prio: %d, counter: %d\n", current_number, next, task[next]->priority, task[next]->counter);
 	}
 	print("tasks' priority changed\n");
-    for( int i=1; i<LAB_TEST_NUM+1; i++)//重新分配task[1-4]优先级
+    for( int i=1; i <= LAB_TEST_NUM; i++)//重新分配task[1-4]优先级
     {   
         task[i]->priority = rand();
         print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);    

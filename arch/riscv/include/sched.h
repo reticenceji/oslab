@@ -23,7 +23,7 @@
 #define PREEMPT_DISABLE 1
 
 /* Lab3中进程的数量以及每个进程初始的时间片 */
-#define LAB_TEST_NUM        4
+#define LAB_TEST_NUM        63
 #define LAB_TEST_COUNTER    5  
 
 /* 当前进程 */
