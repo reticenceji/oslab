@@ -122,9 +122,9 @@ void schedule(void)
     #ifdef PRIORITY
     if(current->counter <= 0)//重新为该进程分配运行时长
     {
- 	    for(int j = LAB_TEST_NUM; j > 0; j--) 
+ 	    for(int j = NR_TASKS; j > 0; j--) 
 	    {
-		    if(task[j]->counter == 0 )//&& current == task[j]
+		    if(task[j]->counter == 0 && task[j] != 0)//&& current == task[j]
 		    {
 			    task[j]->counter = 7-(j-1)%4;//current->counter = 7-(j-1)%4
                 print("[PID = %d] Reset counter = %d\n",j,7-(j-1)%4);
@@ -133,9 +133,9 @@ void schedule(void)
     }
     struct task_struct **p;
     long next, i;
-    p = &task[LAB_TEST_NUM];
-    next = LAB_TEST_NUM;
-    i = LAB_TEST_NUM + 1;
+    p = &task[NR_TASKS];
+    next = NR_TASKS;
+    i = NR_TASKS + 1;
     long cnt1 = (*p)->priority;
     long cnt2 = (*p)->counter;
     while (--i)
@@ -155,7 +155,7 @@ void schedule(void)
         --p;
     }
 	static int current_number=0;
-	for(current_number = 0; current_number <= LAB_TEST_NUM; current_number++)
+	for(current_number = 0; current_number <= NR_TASKS&& task[current_number] != 0; current_number++)
 	{
 		if(current == task[current_number])
 			break;
@@ -164,7 +164,7 @@ void schedule(void)
 	    print("[!]Switch from task %d to task %d, prio: %d, counter: %d\n", current_number, next, task[next]->priority, task[next]->counter);
 	}
 	print("tasks' priority changed\n");
-    for( int i=1; i <= LAB_TEST_NUM; i++)//重新分配task[1-4]优先级
+    for( int i=1; i <= NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
     {   
         task[i]->priority = rand();
         print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);    
