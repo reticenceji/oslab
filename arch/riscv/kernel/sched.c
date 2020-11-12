@@ -14,18 +14,17 @@ void task_init(void)
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->counter = 0;
-    task[0]->priority = LAB_TEST_COUNTER;
+    task[0]->priority = 5;
     task[0]->blocked = 0;
     task[0]->pid = 0;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
-    //task[0]->thread.ra = (unsigned long long)init_epc;
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
         task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = rand();
-        task[i]->priority = LAB_TEST_COUNTER;
+        task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
@@ -41,7 +40,7 @@ void task_init(void)
         task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 7-(i-1)%4;
-        task[i]->priority = LAB_TEST_COUNTER;
+        task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
         task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
@@ -80,8 +79,8 @@ void schedule(void)
     long next;
     while (1)
     {
-    	p = &task[LAB_TEST_NUM];
-        long cnt = INF, i = LAB_TEST_NUM+1;
+    	p = &task[NR_TASKS-1];
+        long cnt = INF, i = NR_TASKS;
         next = 0;
         while (--i)
         {
@@ -105,7 +104,7 @@ void schedule(void)
             for (int j = 1; j <= LAB_TEST_NUM; j++)
             {
                 task[j]->counter = rand();      //重新赋值
-                print("[PID = %d] Reset counter = %d\n",task[j]->pid,task[j]->counter);
+                print("[PID = %l] Reset counter = %l\n",task[j]->pid,task[j]->counter);
             }
         }
         else
@@ -114,7 +113,7 @@ void schedule(void)
         }
     }
     if (current!=task[next])
-        print("[!]Switch from task %d to task %d, prio: %l, counter: %l\n",current->pid,task[next]->pid,task[next]->priority,task[next]->counter);
+        print("[!]Switch from task %l to task %l, prio: %l, counter: %l\n",current->pid,task[next]->pid,task[next]->priority,task[next]->counter);
     switch_to(task[next]);
     #endif
 
@@ -136,7 +135,7 @@ void schedule(void)
     p = &task[NR_TASKS-1];
     next = NR_TASKS-1;
     i = NR_TASKS;
-    long cnt1 = -1;
+    long cnt1 = INF;
     long cnt2 = INF;
     while (--i)
     {
