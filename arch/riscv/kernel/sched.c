@@ -122,22 +122,22 @@ void schedule(void)
     #ifdef PRIORITY
     if(current->counter <= 0)//重新为该进程分配运行时长
     {
- 	    for(int j = NR_TASKS; j > 0; j--) 
+ 	    for(int j = NR_TASKS-1; j > 0; j--) 
 	    {
-		    if(task[j]->counter == 0 && task[j] != 0)//&& current == task[j]
+		    if(task[j] != 0 && task[j]->counter == 0)//&& current == task[j]
 		    {
 			    task[j]->counter = 7-(j-1)%4;//current->counter = 7-(j-1)%4
-                print("[PID = %d] Reset counter = %d\n",j,7-(j-1)%4);
+                print("[PID = %l] Reset counter = %l\n", task[j]->pid, 7-(j-1)%4);
 		    }
 	    }
     }
     struct task_struct **p;
     long next, i;
-    p = &task[NR_TASKS];
-    next = NR_TASKS;
-    i = NR_TASKS + 1;
-    long cnt1 = (*p)->priority;
-    long cnt2 = (*p)->counter;
+    p = &task[NR_TASKS-1];
+    next = NR_TASKS-1;
+    i = NR_TASKS;
+    long cnt1 = -1;
+    long cnt2 = INF;
     while (--i)
     {
         if (!(*p))
@@ -154,20 +154,16 @@ void schedule(void)
         }
         --p;
     }
-	static int current_number=0;
-	for(current_number = 0; current_number <= NR_TASKS&& task[current_number] != 0; current_number++)
-	{
-		if(current == task[current_number])
-			break;
+
+	if(current != task[next]){
+	    print("[!]Switch from task %l to task %l, prio: %l, counter: %l\n", current->pid, task[next]->pid, task[next]->priority, task[next]->counter);
 	}
-	if(current_number != next){
-	    print("[!]Switch from task %d to task %d, prio: %d, counter: %d\n", current_number, next, task[next]->priority, task[next]->counter);
-	}
+
 	print("tasks' priority changed\n");
-    for( int i=1; i <= NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
-    {   
+    for( int i=1; i < NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
+    {
         task[i]->priority = rand();
-        print("[PID = %d] counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);    
+        print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
     }
     switch_to(task[next]);                      //切换到新任务
     #endif
@@ -184,14 +180,15 @@ void switch_to(struct task_struct* next)
 
 /* 死循环 */
 void dead_loop(void)
-{   
+{
     #ifdef SJF
     print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     #endif
     while (1);
 }
 
-static void init_epc(){
+static void init_epc()
+{
     __asm__ __volatile__(
         "csrw sepc,%0;\
          sret;"
