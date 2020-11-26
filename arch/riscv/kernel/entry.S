@@ -59,10 +59,11 @@ exception_table_s:
 interupt_table_s:
 	andi t1,t0,SCAUSE_STI_MASK			#对应于Supervisor timer interrupt
 	beq t1,zero,exception_retaddr_s
+    ecall
 	call sti_handler_s
     POP t0
     csrw sepc, t0
-	ecall								#产生ecall_from_s_mode exception，重新设置mtimecmp
+#ecall								#产生ecall_from_s_mode exception，重新设置mtimecmp
 	j exception_retaddr_s
 	
 exception_retaddr_s:							
