@@ -34,6 +34,23 @@ void puti(int x)
     return;
 }
 
+void putX(unsigned long long x)
+{
+    unsigned long long digit = 1, tmp = x;
+    while (tmp >= 16)
+    {
+        digit *= 16;
+        tmp /= 16;
+    }
+    while (digit >= 1)
+    {
+        *UART16550A_DR = (unsigned char)itoch(x/digit);
+        x %= digit;
+        digit /= 16;
+    }
+    return;
+}
+
 /* 变长数组的用法 https://www.tutorialspoint.com/c_standard_library/stdarg_h.htm
  * 只实现了简单的%d %c %s
  */
@@ -61,6 +78,10 @@ void print(const char *fmt, ...)
             case 'l': /* 数字long */
                     d = va_arg(ap, long);
                     puti(d);
+                    break;
+            case 'X': /* 十六进制输出 unsigned long long */
+                    d = va_arg(ap, unsigned long long );
+                    putX(d);
                     break;
             case 'c': /* 字符 */
                     c = (char)va_arg(ap, int);
