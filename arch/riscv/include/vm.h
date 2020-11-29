@@ -2,14 +2,18 @@
 #define _VM_H
 
 #ifndef NULL
-#define NULL ((void *)0)
+#define NULL 0
 #endif
 
+#define UART_START 0x10000000
+#define UART_SIZE 1
+
+#define KERNEL_SIZE 0x1000000
 #define KERNEL_START_P 0x80000000
-#define KERNEL_END_P (0x80000000 + 16*0x100000)
+#define KERNEL_END_P (KERNEL_START_P+KERNEL_SIZE)
 
 #define KERNEL_START_V 0xffffffe000000000
-#define KERNEL_END_V (0xffffffe000000000 + 16*0x100000)
+#define KERNEL_END_V (KERNEL_START_V + KERNEL_SIZE)
 
 #define PAGE_SIZE 4096
 #define ENTRY_PER_PAGE (PAGE_SIZE / 8)
@@ -19,24 +23,32 @@
 #define ENTRY_PER_FRAME (FRAME_SIZE / 8)
 #define TEST_FRAME_NUM 20
 
-typedef unsigned long long uint64;
+/* 页表的权限位，用或连接 */
+#define FLAG_V 0x1
+#define FLAG_R 0x2
+#define FLAG_W 0x4
+#define FLAG_X 0x8
+#define FLAG_U 0x10
+#define FLAG_G 0x11
+#define FLAG_A 0x12
+#define FLAG_D 0x14
+
+typedef unsigned long long uint64;  //指向一个地址
 
 /* 循环队列实现物理内存管理 */
-typedef unsigned long long frame_t[ENTRY_PER_FRAME];   //长度为4KB的连续内存空间
-typedef unsigned long long page_t[ENTRY_PER_PAGE];
 typedef struct frame_queue
 {
     uint64 front;
     uint64 rear;
     uint64 capacity;
-    frame_t *frame[TEST_FRAME_NUM+1];
+    uint64 frame[TEST_FRAME_NUM+1];
 } frame_queue_t;
 
 /* 初始化frame_queue */
 void init_frame_queue(frame_queue_t *fq);
 
 /* 分配一个frame(dequeue) */
-frame_t *alloc_frame(frame_queue_t *fq);
+uint64 alloc_frame(frame_queue_t *fq);
 
 /* 回收一个frame(enqueue) */
 void free_frame(frame_queue_t *fq);
