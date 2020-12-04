@@ -28,7 +28,7 @@ uint64 alloc_frame(frame_queue_t *fq)
     }
     uint64 valid_frame = fq->frame[fq->front];
     fq->front = (fq->front+1) % fq->capacity;
-    return valid_frame;     //返回值valid_frame是一个数组指针, 指向一块4KB的物理内存
+    return valid_frame;     
 }
 
 void free_frame(frame_queue_t *fq)
