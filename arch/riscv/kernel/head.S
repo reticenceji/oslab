@@ -46,6 +46,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
 _start_retaddr:
     la sp, stack_top
     la t0, exception_addr_s
+    # TODO 我觉得在这里设置Page table,设置stevc,设置satp;设置stevc,sp
     csrw stvec, t0              #设置supervisor mode异常处理地址
     call start_kernel
 
@@ -55,6 +56,7 @@ _start_retaddr:
 exception_addr_m:
 .globl exception_addr_m
 #save context     
+    # TODO 修改M mode的栈
     PUSH x2			            # 将原来的sp压栈
 	PUSH x1			
     PUSH x3

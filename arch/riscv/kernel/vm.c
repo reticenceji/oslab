@@ -17,7 +17,7 @@ void init_frame_queue(frame_queue_t *fq)
     fq->front = 0;
     fq->rear = 0;
     fq->capacity = TEST_FRAME_NUM + 1;
-    // the elements in fq->frame haven't been initialized yet
+    // TODO the elements in fq->frame haven't been initialized yet
 }
 
 uint64 alloc_frame(frame_queue_t *fq)
@@ -56,5 +56,5 @@ int paging_init()
 
 int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
-
+    // TODO 
 }

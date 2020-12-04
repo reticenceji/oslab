@@ -9,6 +9,7 @@ static void init_epc();
 /* 进程初始化 创建四个dead_loop进程 */ 
 void task_init(void)
 {
+    // print("%X\n",task_init);
     print("task init...\n");
     current = (struct task_struct*)0x80010000;
     task[0] = current;
