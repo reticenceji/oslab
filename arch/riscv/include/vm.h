@@ -63,7 +63,7 @@ static int fq_is_empty(frame_queue_t *fq);
 /* 页表映射的统一接口, 成功返回1, 失败返回0 */
 int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm);
 
-/* 初始化地址映射 */
-int paging_init();
+/* 初始化地址映射, 返回基地址*/
+uint64* paging_init();
 
 #endif

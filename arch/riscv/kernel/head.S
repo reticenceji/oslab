@@ -29,7 +29,9 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
     
     li t0, 0x20
-    csrw mideleg, t0            #设置委托
+    csrw mideleg, t0            #设置委托，时钟中断
+    li t0, 0x8000
+    csrw medeleg, t0            #设置委托，page fault
     li t0, 0xA0
     csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
 
@@ -41,13 +43,21 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     csrw mepc, t0               #设置mret的返回地址
     la t0, exception_addr_m
     csrw mtvec, t0              #设置machine mode异常处理地址
-    mret
-    
-_start_retaddr:
     la sp, stack_top
-    la t0, exception_addr_s
+    csrw mscratch,sp            #设置M mode的堆栈
+    mret
+
+_start_retaddr:
+    
     # TODO 我觉得在这里设置Page table,设置stevc,设置satp;设置stevc,sp
-    csrw stvec, t0              #设置supervisor mode异常处理地址
+    call paging_init
+    la t0, virtual_next
+    li t1,0xffffffe000000000-0x80000000  
+    add t0,t0,t1
+    csrw stvec, t0                  #设置supervisor mode异常处理地址
+    li t0,0x8000000000000000
+    csrw satp, t0
+virtual_next:
     call start_kernel
 
 #exception handlers
@@ -57,6 +67,7 @@ exception_addr_m:
 .globl exception_addr_m
 #save context     
     # TODO 修改M mode的栈
+    csrrw sp,mscratch,sp        # 交换sp和mscratch的值
     PUSH x2			            # 将原来的sp压栈
 	PUSH x1			
     PUSH x3
@@ -164,5 +175,6 @@ exception_retaddr_m:
 	POP x3
 	POP x1
 	POP x2
+    csrrw sp,mscratch,sp    
     mret
 

@@ -1,6 +1,6 @@
 #include "vm.h"
 
-extern frame_queue_t *fq;
+frame_queue_t *fq;
 
 int fq_is_full(frame_queue_t *fq)
 {
@@ -41,7 +41,7 @@ void free_frame(frame_queue_t *fq)
     fq->rear = (fq->rear+1) % fq->capacity;
 }
 
-int paging_init()
+uint64* paging_init()
 {
     uint64* page_base;
     init_frame_queue(fq);
@@ -52,14 +52,10 @@ int paging_init()
     create_mapping(page_base,KERNEL_START_V,KERNEL_START_P,KERNEL_SIZE,FLAG_U|FLAG_R|FLAG_W|FLAG_X);
     //低地址的等值映射,可以理解为是那些外部设备map到内存的地方.
     create_mapping(page_base,UART_START,UART_START,UART_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
+    return page_base;
 }
 
 int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
-<<<<<<< HEAD
     // TODO 
 }
-=======
-
-}
->>>>>>> e4c30b7e808be8235c1a94c99b789f2bf595ff3d
