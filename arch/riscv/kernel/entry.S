@@ -105,10 +105,8 @@ exception_retaddr_s:
 	POP x3
 	POP x1
 	POP x2
-
-	sret	
-
-
+	sret
+		
 #第一个参数 a0 current
 #第二个参数 a1 prev
 .globl __switch_to
