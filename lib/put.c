@@ -39,14 +39,14 @@ void putX(unsigned long long x)
     unsigned long long digit = 1, tmp = x;
     while (tmp >= 16)
     {
-        digit *= 16;
-        tmp /= 16;
+        digit = digit << 4;
+        tmp = tmp >> 4;
     }
-    while (digit >= 1)
+    while (digit != 0)
     {
-        *UART16550A_DR = (unsigned char)itoch(x/digit);
+        *UART16550A_DR = (unsigned char) (x/digit<10?x/digit+'0':x/digit-10+'a');
         x %= digit;
-        digit /= 16;
+        digit = digit >> 4;
     }
     return;
 }
@@ -58,6 +58,7 @@ void print(const char *fmt, ...)
 {
     va_list ap;
     int d;
+    unsigned long long x;
     char c, *s;
 
     va_start(ap, fmt);
@@ -80,8 +81,8 @@ void print(const char *fmt, ...)
                     puti(d);
                     break;
             case 'X': /* 十六进制输出 unsigned long long */
-                    d = va_arg(ap, unsigned long long );
-                    putX(d);
+                    x = va_arg(ap, unsigned long long );
+                    putX(x);
                     break;
             case 'c': /* 字符 */
                     c = (char)va_arg(ap, int);

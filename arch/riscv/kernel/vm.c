@@ -11,9 +11,9 @@ static frame_queue_t frame_queue;
 
 static void add_entry(uint64 page_addr,uint64 entry_addr,int number,int permisson)
 {
-    *(uint64 *)(page_addr + (uint64)number*8) = (entry_addr >> 12 << 12) + permisson;
+    *(uint64 *)(page_addr + (uint64)number*8) = ((entry_addr>>12)<<12) + permisson;
     #ifdef DEBUG
-        //print("[info]Page Table Entry:%X:%X\n",(page_addr + (uint64)number*8),(entry_addr >> 12 << 12) + permisson);  
+        print("\t[info]Page Table Entry:%X:%X\n",(page_addr + (uint64)number*8),(entry_addr >> 12 << 12) + permisson);  
     #endif
     return;
 } 
@@ -80,32 +80,30 @@ __attribute__((optimize("O0"))) int create_mapping(uint64 *pgtbl, uint64 va, uin
     // TODO 
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
     int num_pd,num_pmd,num_pud; 
-    /* 分别是一级起始位置，二级起始位置，三级起始位置*/
-    int start_pgd,start_pud,start_pmd;
     int i,j,k;
     uint64 addr_pud,addr_pmd,addr_pd;
-    start_pgd = va>>30;
-    start_pud = (va>>21) & 0x1ff;
-    start_pmd = (va>>12) & 0x1ff; 
     num_pd = (sz+PAGE_SIZE-1) >> 12;
     num_pmd = (num_pd+ENTRY_PER_PAGE-1) >> 9;
     num_pud = (num_pmd+ENTRY_PER_PAGE-1) >> 9;
     #ifdef DEBUG
-        print("[*] Function create_mapping START\n[info] pagetable_base=%X\n",pgtbl);
-        print("[info] sz:%X pud:%X pmd:%X pd:%X\n",sz,num_pud,num_pmd,num_pd);
+        print("[*]\tFunction create_mapping START\n");
+        print("pgtbl:%X,va:%X,pa:%X\n",pgtbl,va,pa);
+        print("[info]\tpagetable_base=%X\n",pgtbl);
+        print("[info]\tsz:%X pud:%X pmd:%X pd:%X\n",sz,num_pud,num_pmd,num_pd);
     #endif
-    for (i=start_pgd;i<start_pgd+num_pud;i++)
+    for (i=0;i<num_pud;i++)
     {
         addr_pud = alloc_frame(&frame_queue);
-        add_entry((uint64)pgtbl,addr_pud,i,perm);
-        for (j=start_pud;j<start_pud+num_pmd;j++)
+        add_entry((uint64)pgtbl,addr_pud,(va>>30)&0x1ff,perm);
+        for (j=0;j<num_pmd;j++)
         {
             addr_pmd = alloc_frame(&frame_queue);
-            add_entry(addr_pud,addr_pmd,j,perm);
-            for (k=start_pmd;k<num_pd;k++)
+            add_entry(addr_pud,addr_pmd,(va>>21)&0x1ff,perm);
+            for (k=0;k<num_pd;k++)
             {
-                add_entry(addr_pmd,pa,k,perm);
-                pa+=FRAME_SIZE;
+                add_entry(addr_pmd,pa,(va>>12)&0x1ff,perm);
+                pa=pa+FRAME_SIZE;
+                va+=PAGE_SIZE;
             }
         }
     }
