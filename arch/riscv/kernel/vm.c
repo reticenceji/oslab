@@ -12,6 +12,9 @@ static frame_queue_t frame_queue;
 static void add_entry(uint64 page_addr,uint64 entry_addr,int number,int permisson)
 {
     *(uint64 *)(page_addr + (uint64)number*8) = (entry_addr >> 12 << 12) + permisson;
+    #ifdef DEBUG
+        //print("[info]Page Table Entry:%X:%X\n",(page_addr + (uint64)number*8),(entry_addr >> 12 << 12) + permisson);  
+    #endif
     return;
 } 
 
@@ -58,7 +61,7 @@ void free_frame(frame_queue_t *fq)
 __attribute__((optimize("O0"))) uint64* paging_init()
 {
     #ifdef DEBUG
-    print("[*] Function pagint_init\n[info] frame_queue:%X\n",&frame_queue);
+    print("[*] Function pagint_init START\n[info] frame_queue:%X\n",&frame_queue);
     #endif
     uint64* page_base;
     init_frame_queue(&frame_queue);
@@ -75,32 +78,38 @@ __attribute__((optimize("O0"))) uint64* paging_init()
 __attribute__((optimize("O0"))) int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
     // TODO 
-    /* 分别是页表数量，三级页表数量，二级页表数量 */
+    /* 分别是页表条目数量，三级页表数量，二级页表数量 */
     int num_pd,num_pmd,num_pud; 
+    /* 分别是一级起始位置，二级起始位置，三级起始位置*/
+    int start_pgd,start_pud,start_pmd;
     int i,j,k;
     uint64 addr_pud,addr_pmd,addr_pd;
-    num_pd = (sz+PAGE_SIZE-1) << 12;
-    num_pmd = (num_pd+ENTRY_PER_PAGE-1) << 9;
-    num_pud = (num_pd+ENTRY_PER_PAGE-1) << 9;
+    start_pgd = va>>30;
+    start_pud = (va>>21) & 0x1ff;
+    start_pmd = (va>>12) & 0x1ff; 
+    num_pd = (sz+PAGE_SIZE-1) >> 12;
+    num_pmd = (num_pd+ENTRY_PER_PAGE-1) >> 9;
+    num_pud = (num_pmd+ENTRY_PER_PAGE-1) >> 9;
     #ifdef DEBUG
-        print("[*] Function create_mapping\n[info] pagetable_base=%X\n",pgtbl);
+        print("[*] Function create_mapping START\n[info] pagetable_base=%X\n",pgtbl);
+        print("[info] sz:%X pud:%X pmd:%X pd:%X\n",sz,num_pud,num_pmd,num_pd);
     #endif
-    for (i=0;i<num_pud;i++)
+    for (i=start_pgd;i<start_pgd+num_pud;i++)
     {
         addr_pud = alloc_frame(&frame_queue);
         add_entry((uint64)pgtbl,addr_pud,i,perm);
-        for (j=0;j<num_pmd;j++)
+        for (j=start_pud;j<start_pud+num_pmd;j++)
         {
             addr_pmd = alloc_frame(&frame_queue);
             add_entry(addr_pud,addr_pmd,j,perm);
-            for (k=0;k<num_pd;k++)
+            for (k=start_pmd;k<num_pd;k++)
             {
-                addr_pd = alloc_frame(&frame_queue);
-                add_entry(addr_pmd,addr_pd,j,perm);
+                add_entry(addr_pmd,pa,k,perm);
+                pa+=FRAME_SIZE;
             }
         }
     }
     #ifdef DEBUG
-        print("[*]Done create_mapping\n");  
+        print("[*] Function create_mapping DONE\n[info] pa_end:%X\n",pa);  
     #endif
 }
