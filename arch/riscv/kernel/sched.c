@@ -1,4 +1,5 @@
 #include "sched.h"
+#include "vm.h"
 #include "../../../include/rand.h"
 #include "put.h"
 #define INF 1e9
@@ -11,7 +12,7 @@ void task_init(void)
 {
     // print("%X\n",task_init);
     print("task init...\n");
-    current = (struct task_struct*)0x80010000;
+    current = (struct task_struct*)(TASK_START_V);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->counter = 0;
@@ -22,7 +23,7 @@ void task_init(void)
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
-        task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
+        task[i] = (struct task_struct*)(TASK_START_V + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = rand();
         task[i]->priority = 5;
@@ -38,7 +39,7 @@ void task_init(void)
     #ifdef PRIORITY
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
-        task[i] = (struct task_struct*)(0x80010000 + i*TASK_SIZE);
+        task[i] = (struct task_struct*)(TASK_START_V + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 7-(i-1)%4;
         task[i]->priority = 5;
