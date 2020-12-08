@@ -55,7 +55,7 @@ _start_retaddr:
     add t0,t0,t1
     csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
-    li t0,0x8000000000000000
+    li t0,0x8000000000081000
     add t0,t0,a0
     csrw satp,t0
 virtual_next:

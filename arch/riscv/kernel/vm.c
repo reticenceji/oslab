@@ -31,7 +31,7 @@ void init_frame_queue(frame_queue_t *fq)
     fq->capacity = TEST_FRAME_NUM + 1;
     // TODO the elements in fq->frame haven't been initialized yet
     for (fq->rear=0;fq->rear<TEST_FRAME_NUM;fq->rear++)
-        fq->frame[fq->rear] = KERNEL_START_P + FRAME_SIZE*fq->rear;
+        fq->frame[fq->rear] = KERNEL_START_P + KERNEL_SIZE + FRAME_SIZE*fq->rear;
 }
 
 uint64 alloc_frame(frame_queue_t *fq)
