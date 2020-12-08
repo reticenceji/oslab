@@ -53,13 +53,6 @@ uint64 alloc_frame(frame_queue_t *fq);
 /* 回收一个frame(enqueue) */
 void free_frame(frame_queue_t *fq);
 
-/* 判断队列是否为满, 为满返回1, 否则返回0 */
-static int fq_is_full(frame_queue_t *fq);
-
-/* 判断队列是否为空, 为空返回1, 否则返回0 */
-static int fq_is_empty(frame_queue_t *fq);
-
-
 /* 页表映射的统一接口, 成功返回1, 失败返回0 */
 int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm);
 
