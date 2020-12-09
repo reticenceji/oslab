@@ -6,7 +6,7 @@
 #endif
 
 #define UART_START 0x10000000
-#define UART_SIZE 1
+#define UART_SIZE 0x100
 
 #define KERNEL_SIZE 0x1000000
 #define KERNEL_START_P 0x80000000

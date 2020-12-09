@@ -30,10 +30,10 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     
     li t0, 0x20
     csrw mideleg, t0            #设置委托，时钟中断
-    li t0, 0x8000
+    li t0, 0x9820
     csrw medeleg, t0            #设置委托，page fault
-    li t0, 0xA0
-    csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
+#    li t0, 0xA0
+#    csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
 
     li t0, 0x7FF
     addi t0, t0, 0xB
@@ -56,7 +56,6 @@ _start_retaddr:
     csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
     li t0,0x8000000000081000
-    add t0,t0,a0
     csrw satp,t0
 virtual_next:
     call start_kernel
