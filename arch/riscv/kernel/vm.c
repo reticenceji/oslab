@@ -2,16 +2,18 @@
 #include "put.h"
 /* 判断队列是否为满, 为满返回1, 否则返回0 */
 static int fq_is_full(frame_queue_t *fq);
+/* 判断队列是否为满, 为满返回1, 否则返回0 */
+static int fq_is_full(frame_queue_t *fq);
 /* 添加一个页表项 */
-static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm);
+static void add_entry(uint64 page_addr,uint64 entry_addr,int number,int permisson);
 /* 物理页管理队列 */
 static frame_queue_t frame_queue;
 
-static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm)
+static void add_entry(uint64 page_addr,uint64 entry_addr,int number,int permisson)
 {
-    ((uint64 *)page_addr)[vpn] = ((ppn >> 12) << 12) + perm;
+    *(uint64 *)(page_addr + (uint64)number*8) = ((entry_addr>>12)<<12) + permisson;
     #ifdef DEBUG
-        print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 12)+perm);
+        print("\t[info]Page Table Entry:%X:%X\n",(page_addr + (uint64)number*8),(entry_addr >> 12 << 12) + permisson);  
     #endif
     return;
 } 
@@ -30,6 +32,7 @@ void init_frame_queue(frame_queue_t *fq)
 {
     fq->front = 0;
     fq->capacity = TEST_FRAME_NUM + 1;
+    // TODO the elements in fq->frame haven't been initialized yet
     for (fq->rear=0;fq->rear<TEST_FRAME_NUM;fq->rear++)
         fq->frame[fq->rear] = KERNEL_START_P + KERNEL_SIZE + FRAME_SIZE*fq->rear;
 }
@@ -58,20 +61,17 @@ void free_frame(frame_queue_t *fq)
 __attribute__((optimize("O0"))) uint64* paging_init()
 {
     #ifdef DEBUG
-    print("[*]\tFunction paging_init\n[info] frame_queue:%X\n",&frame_queue);
+    print("[*] Function pagint_init START\n[info] frame_queue:%X\n",&frame_queue);
     #endif
     uint64* page_base;
     init_frame_queue(&frame_queue);
     page_base = (uint64*)alloc_frame(&frame_queue);
     //映射到高地址,没有关注权限位
-    create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
+    create_mapping(page_base,KERNEL_START_V,KERNEL_START_P,KERNEL_SIZE,FLAG_U|FLAG_R|FLAG_W|FLAG_X);
     //等值映射,先留着也许可以不用
-    //create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
+    create_mapping(page_base,KERNEL_START_V,KERNEL_START_P,KERNEL_SIZE,FLAG_U|FLAG_R|FLAG_W|FLAG_X);
     //低地址的等值映射,可以理解为是那些外部设备map到内存的地方.
-    create_mapping(page_base, UART_START, UART_START,UART_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
-    #ifdef DEBUG
-    print("[*]\tFunction paging_init DONE\n");  
-    #endif
+    create_mapping(page_base,UART_START,UART_START,UART_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
     return page_base;
 }
 
@@ -79,44 +79,35 @@ __attribute__((optimize("O0"))) int create_mapping(uint64 *pgtbl, uint64 va, uin
 {
     // TODO 
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
-    int num_pd, num_pmd, num_pud;
-    /* 最后一张二级页表可能不能被三级页表填满，最后一张三级页表可能不能被entry填满 */
-    int jmax, kmax;
-    uint64 addr_pd, addr_pmd, addr_pud;
-    int i, j, k;
-    int vpn2, vpn1, vpn0;
-
-    num_pd = (sz + PAGE_SIZE-1) >> 12;
-    num_pmd = (num_pd + ENTRY_PER_PAGE-1) >> 9;
-    num_pud = (num_pmd + ENTRY_PER_PAGE-1) >> 9;
+    int num_pd,num_pmd,num_pud; 
+    int i,j,k;
+    uint64 addr_pud,addr_pmd,addr_pd;
+    num_pd = (sz+PAGE_SIZE-1) >> 12;
+    num_pmd = (num_pd+ENTRY_PER_PAGE-1) >> 9;
+    num_pud = (num_pmd+ENTRY_PER_PAGE-1) >> 9;
     #ifdef DEBUG
-        print("[*] Function create_mapping START\n");
-        print("pgtbl=%X, va=%X, pa=%X\n", pgtbl, va, pa);
-        print("[info]\tsz=%X, pud=%X, pmd=%X, pd=%X\n", sz, num_pud, num_pmd, num_pd);
+        print("[*]\tFunction create_mapping START\n");
+        print("pgtbl:%X,va:%X,pa:%X\n",pgtbl,va,pa);
+        print("[info]\tpagetable_base=%X\n",pgtbl);
+        print("[info]\tsz:%X pud:%X pmd:%X pd:%X\n",sz,num_pud,num_pmd,num_pd);
     #endif
-    for (i = 0; i < num_pud; i++)
+    for (i=0;i<num_pud;i++)
     {
         addr_pud = alloc_frame(&frame_queue);
-        vpn2 = (va >> 30) & 0x1FF;
-        add_entry((uint64)pgtbl, vpn2, addr_pud, perm);
-        jmax = (i==num_pud-1)?((num_pmd-1)&0x1FF)+1:ENTRY_PER_PAGE;
-
-        for (j = 0; j < jmax; j++)
+        add_entry((uint64)pgtbl,addr_pud,(va>>30)&0x1ff,perm);
+        for (j=0;j<num_pmd;j++)
         {
             addr_pmd = alloc_frame(&frame_queue);
-            vpn1 = (va >> 21) & 0x1FF;
-            add_entry(addr_pud, vpn1, addr_pmd, perm);
-            kmax = (i==num_pud-1 && j==jmax-1)?((num_pd-1)&0x1FF)+1:ENTRY_PER_PAGE;
-            for (k = 0; k < kmax; k++)
+            add_entry(addr_pud,addr_pmd,(va>>21)&0x1ff,perm);
+            for (k=0;k<num_pd;k++)
             {
-                vpn0 = (va >> 12) & 0x1FF;
-                add_entry(addr_pmd, vpn0, pa, perm);
-                va += PAGE_SIZE;
-                pa += FRAME_SIZE;
+                add_entry(addr_pmd,pa,(va>>12)&0x1ff,perm);
+                pa=pa+FRAME_SIZE;
+                va+=PAGE_SIZE;
             }
         }
     }
     #ifdef DEBUG
-        print("[*]Done create_mapping\n");  
+        print("[*] Function create_mapping DONE\n[info] pa_end:%X\n",pa);  
     #endif
 }
