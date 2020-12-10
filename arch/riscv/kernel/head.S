@@ -23,17 +23,17 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
                                
     li t0, MTIME
     ld t0, 0(t0)
-    li t1, 1000000
+    li t1, 1000000000
     add t0, t0, t1
     li t1, MTIMECMP
     sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
     
     li t0, 0x20
     csrw mideleg, t0            #设置委托，时钟中断
-    li t0, 0x9820
-    csrw medeleg, t0            #设置委托，page fault
-#    li t0, 0xA0
-#    csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
+    li t0, 0xB000
+    csrw medeleg, t0            #设置委托，instruction/load/store page fault
+    li t0, 0xA0
+    csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
 
     li t0, 0x7FF
     addi t0, t0, 0xB
@@ -44,7 +44,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     la t0, exception_addr_m
     csrw mtvec, t0              #设置machine mode异常处理地址
     la sp, stack_top
-    csrw mscratch,sp            #设置M mode的堆栈
+    csrw mscratch, sp           #设置M mode的堆栈
     mret
 
 _start_retaddr:
@@ -55,22 +55,27 @@ _start_retaddr:
     #add t0,t0,t1
     csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
-    li t0, 0xA0
-    csrw mie, t0
+
+#    li t0, 0xA0
+#    csrw mie, t0                    #开启时钟中断
     li t0,0x8000000000081000
     csrw satp,t0
+
     #TODO timmy put things here
     la t0, exception_addr_s
-    li t1,0xffffffe000000000-0x80000000  
-    add t0,t0,t1
+#li t1, 0xffffffe000000000-0x80000000
+#add t0, t0, t1
     csrw stvec, t0    #set s mode interupt handle place
+
     la t0, init_stack_top
-    li t1,0xffffffe000000000-0x80000000  
-    add t0,t0,t1
-    sd  t0,0(sp)
+    li t1, 0xffffffe000000000-0x80000000  
+    add t0, t0, t1
+    mv sp, t0
     # TODO timmy did not finish here
 virtual_next:
-    call start_kernel
+    la t0, start_kernel
+    jr t0
+#call start_kernel
 
 #exception handlers
 .align 2
@@ -79,8 +84,8 @@ exception_addr_m:
 .globl exception_addr_m
 #save context     
     # TODO 修改M mode的栈
-    csrrw sp,mscratch,sp        # 交换sp和mscratch的值
-    PUSH x2			            # 将原来的sp压栈
+    csrrw sp, mscratch, sp        # 交换sp和mscratch的值
+    PUSH x2			              # 将原来的sp压栈
 	PUSH x1			
     PUSH x3
 	PUSH x4

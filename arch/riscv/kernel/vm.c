@@ -9,9 +9,9 @@ static frame_queue_t frame_queue;
 
 static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm)
 {
-    ((uint64 *)page_addr)[vpn] = ((ppn >> 12) << 12) + perm;
+    ((uint64 *)page_addr)[vpn] = ((ppn >> 12) << 10) + perm;
     #ifdef DEBUG
-        print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 12)+perm);
+        print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 10)+perm);
     #endif
     return;
 } 
@@ -63,19 +63,23 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     uint64* page_base;
     init_frame_queue(&frame_queue);
     page_base = (uint64*)alloc_frame(&frame_queue);
+
     //映射到高地址,没有关注权限位
-    create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
+    create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+
     //等值映射,先留着也许可以不用
-    create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
+    create_mapping(page_base, KERNEL_START_P, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+
     //低地址的等值映射,可以理解为是那些外部设备map到内存的地方.
-    create_mapping(page_base, UART_START, UART_START,UART_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X);
+    create_mapping(page_base, UART_START, UART_START,UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+
     #ifdef DEBUG
     print("[*]\tFunction paging_init DONE\n");  
     #endif
     return page_base;
 }
 
-__attribute__((optimize("O0"))) int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
+__attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
     // TODO 
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
@@ -99,14 +103,14 @@ __attribute__((optimize("O0"))) int create_mapping(uint64 *pgtbl, uint64 va, uin
         addr_pud = alloc_frame(&frame_queue);
         vpn2 = (va >> 30) & 0x1FF;
         add_entry((uint64)pgtbl, vpn2, addr_pud, perm);
-        jmax = (i==num_pud-1)?((num_pmd-1)&0x1FF)+1:ENTRY_PER_PAGE;
+        jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
 
         for (j = 0; j < jmax; j++)
         {
             addr_pmd = alloc_frame(&frame_queue);
             vpn1 = (va >> 21) & 0x1FF;
             add_entry(addr_pud, vpn1, addr_pmd, perm);
-            kmax = (i==num_pud-1 && j==jmax-1)?((num_pd-1)&0x1FF)+1:ENTRY_PER_PAGE;
+            kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
             for (k = 0; k < kmax; k++)
             {
                 vpn0 = (va >> 12) & 0x1FF;
@@ -119,4 +123,5 @@ __attribute__((optimize("O0"))) int create_mapping(uint64 *pgtbl, uint64 va, uin
     #ifdef DEBUG
         print("[*]Done create_mapping\n");  
     #endif
+    return;
 }

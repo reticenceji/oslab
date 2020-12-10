@@ -20,11 +20,11 @@
 
 #define PAGE_SIZE 4096
 #define ENTRY_PER_PAGE (PAGE_SIZE / 8)
-#define TEST_PAGE_NUM 20    //这里设计了比实际需要更多的数量
+#define TEST_PAGE_NUM 50    //这里设计了比实际需要更多的数量
 
 #define FRAME_SIZE 4096
 #define ENTRY_PER_FRAME (FRAME_SIZE / 8)
-#define TEST_FRAME_NUM 20
+#define TEST_FRAME_NUM 50
 
 /* 页表的权限位，用或连接 */
 #define FLAG_V 0x1
@@ -56,8 +56,8 @@ uint64 alloc_frame(frame_queue_t *fq);
 /* 回收一个frame(enqueue) */
 void free_frame(frame_queue_t *fq);
 
-/* 页表映射的统一接口, 成功返回1, 失败返回0 */
-int create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm);
+/* 页表映射的统一接口 */
+void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm);
 
 /* 初始化地址映射, 返回基地址*/
 uint64* paging_init();
