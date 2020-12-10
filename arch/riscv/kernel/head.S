@@ -51,12 +51,24 @@ _start_retaddr:
     
     # TODO 我觉得在这里设置Page table,设置stevc,设置satp;设置stevc,sp
     la t0, virtual_next
-    li t1,0xffffffe000000000-0x80000000  
-    add t0,t0,t1
+    #li t1,0xffffffe000000000-0x80000000  
+    #add t0,t0,t1
     csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
+    li t0, 0xA0
+    csrw mie, t0
     li t0,0x8000000000081000
     csrw satp,t0
+    #TODO timmy put things here
+    la t0, exception_addr_s
+    li t1,0xffffffe000000000-0x80000000  
+    add t0,t0,t1
+    csrw stvec, t0    #set s mode interupt handle place
+    la t0, init_stack_top
+    li t1,0xffffffe000000000-0x80000000  
+    add t0,t0,t1
+    sd  t0,0(sp)
+    # TODO timmy did not finish here
 virtual_next:
     call start_kernel
 
