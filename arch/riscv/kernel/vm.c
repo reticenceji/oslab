@@ -102,14 +102,14 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
     {
         addr_pud = alloc_frame(&frame_queue);
         vpn2 = (va >> 30) & 0x1FF;
-        add_entry((uint64)pgtbl, vpn2, addr_pud, perm);
+        add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
         jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
 
         for (j = 0; j < jmax; j++)
         {
             addr_pmd = alloc_frame(&frame_queue);
             vpn1 = (va >> 21) & 0x1FF;
-            add_entry(addr_pud, vpn1, addr_pmd, perm);
+            add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
             kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
             for (k = 0; k < kmax; k++)
             {
