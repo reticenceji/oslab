@@ -11,9 +11,13 @@ static void init_epc();
 void task_init(void)
 {
     // print("%X\n",task_init);
-    #ifdef DEBUG
+    #ifdef DEBUGSTORE
         int *x=(int *)task_init;
-        x = 1;
+        *x = 1;
+    #endif
+    #ifdef DEBUGEXE
+    int (*x) (int)=(int (*)(int))"Hello world";
+    int a=(*x)(5);
     #endif
     print("task init...\n");
     current = (struct task_struct*)(TASK_START_V);
