@@ -20,7 +20,7 @@ static frame_queue_t frame_queue;
 static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm)
 {
     ((uint64 *)page_addr)[vpn] = ((ppn >> 12) << 10) + perm;
-    #ifdef DEBUG
+    #ifdef DEBUGTEST
         print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 10)+perm);
     #endif
     return;
@@ -67,7 +67,7 @@ void free_frame(frame_queue_t *fq)
 
 __attribute__((optimize("O0"))) uint64* paging_init()
 {
-    #ifdef DEBUG
+    #ifdef DEBUGTEST
     print("[*]\tFunction paging_init\n[info] frame_queue:%X\n",&frame_queue);
     #endif
     uint64* page_base;
@@ -81,16 +81,16 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     create_mapping(page_base, ((uint64)&text_start) + MAP_OFFSET, KERNEL_START_P, (uint64)&text_end - KERNEL_START_P, FLAG_R|FLAG_X|FLAG_V);
 
     //rodata段映射, r--
-    create_mapping(page_base, ((uint64)&text_end) + MAP_OFFSET+1, (uint64)&text_end + 1, (uint64)&rodata_end - (uint64)&text_end-1, FLAG_R|FLAG_V|FLAG_X);
+    create_mapping(page_base, ((uint64)&text_end) + MAP_OFFSET+1, (uint64)&text_end + 1, (uint64)&rodata_end - (uint64)&text_end-1, FLAG_R|FLAG_V);
 
     //data段映射, rw-
-    create_mapping(page_base, ((uint64)&rodata_end) + MAP_OFFSET+1, (uint64)&rodata_end + 1, (uint64)&data_end - (uint64)&rodata_end-1, FLAG_R|FLAG_W|FLAG_V|FLAG_X);
+    create_mapping(page_base, ((uint64)&rodata_end) + MAP_OFFSET+1, (uint64)&rodata_end + 1, (uint64)&data_end - (uint64)&rodata_end-1, FLAG_R|FLAG_W|FLAG_V);
 
     //bss段映射, rw-
-    create_mapping(page_base, ((uint64)&data_end) + MAP_OFFSET+1, (uint64)&data_end + 1, (uint64)&bss_end - (uint64)&data_end-1, FLAG_R|FLAG_W|FLAG_V|FLAG_X);
+    create_mapping(page_base, ((uint64)&data_end) + MAP_OFFSET+1, (uint64)&data_end + 1, (uint64)&bss_end - (uint64)&data_end-1, FLAG_R|FLAG_W|FLAG_V);
 
     //other映射, rw-
-    create_mapping(page_base, ((uint64)&bss_end) + MAP_OFFSET+1, (uint64)&bss_end + 1, KERNEL_SIZE-((uint64)&bss_end - (uint64)&text_start + 1), FLAG_R|FLAG_W|FLAG_V|FLAG_X);
+    create_mapping(page_base, ((uint64)&bss_end) + MAP_OFFSET+1, (uint64)&bss_end + 1, KERNEL_SIZE-((uint64)&bss_end - (uint64)&text_start + 1), FLAG_R|FLAG_W|FLAG_V);
 
     //等值映射,先留着也许可以不用
     create_mapping(page_base, KERNEL_START_P, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
@@ -98,7 +98,7 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     //低地址的等值映射,可以理解为是那些外部设备map到内存的地方.
     create_mapping(page_base, UART_START, UART_START,UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 
-    #ifdef DEBUG
+    #ifdef DEBUGTEST
     print("[*]\tFunction paging_init DONE\n");  
     #endif
     return page_base;
@@ -118,7 +118,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
     num_pd = (sz + PAGE_SIZE-1) >> 12;
     num_pmd = (num_pd + ENTRY_PER_PAGE-1) >> 9;
     num_pud = (num_pmd + ENTRY_PER_PAGE-1) >> 9;
-    #ifdef DEBUG
+    #ifdef DEBUGTEST
         print("[*] Function create_mapping START\n");
         print("pgtbl=%X, va=%X, pa=%X\n", pgtbl, va, pa);
         print("[info]\tsz=%X, pud=%X, pmd=%X, pd=%X\n", sz, num_pud, num_pmd, num_pd);
@@ -167,7 +167,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             }
         }
     }
-    #ifdef DEBUG
+    #ifdef DEBUGTEST
         print("[*]Done create_mapping\n");  
     #endif
     return;
