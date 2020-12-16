@@ -1,5 +1,15 @@
 #include "vm.h"
 #include "put.h"
+
+extern uint64 text_start;
+extern uint64 text_end;
+extern uint64 rodata_start;
+extern uint64 rodata_end;
+extern uint64 data_start;
+extern uint64 data_end;
+extern uint64 bss_start;
+extern uint64 bss_end;
+
 /* 判断队列是否为满, 为满返回1, 否则返回0 */
 static int fq_is_full(frame_queue_t *fq);
 /* 添加一个页表项 */
@@ -65,7 +75,22 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     page_base = (uint64*)alloc_frame(&frame_queue);
 
     //映射到高地址,没有关注权限位
-    create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+    //create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+    
+    //text段映射, r-x
+    create_mapping(page_base, ((uint64)&text_start) + MAP_OFFSET, KERNEL_START_P, (uint64)&text_end - KERNEL_START_P, FLAG_R|FLAG_X|FLAG_V);
+
+    //rodata段映射, r--
+    create_mapping(page_base, ((uint64)&text_end) + MAP_OFFSET+1, (uint64)&text_end + 1, (uint64)&rodata_end - (uint64)&text_end-1, FLAG_R|FLAG_V|FLAG_X);
+
+    //data段映射, rw-
+    create_mapping(page_base, ((uint64)&rodata_end) + MAP_OFFSET+1, (uint64)&rodata_end + 1, (uint64)&data_end - (uint64)&rodata_end-1, FLAG_R|FLAG_W|FLAG_V|FLAG_X);
+
+    //bss段映射, rw-
+    create_mapping(page_base, ((uint64)&data_end) + MAP_OFFSET+1, (uint64)&data_end + 1, (uint64)&bss_end - (uint64)&data_end-1, FLAG_R|FLAG_W|FLAG_V|FLAG_X);
+
+    //other映射, rw-
+    create_mapping(page_base, ((uint64)&bss_end) + MAP_OFFSET+1, (uint64)&bss_end + 1, KERNEL_SIZE-((uint64)&bss_end - (uint64)&text_start + 1), FLAG_R|FLAG_W|FLAG_V|FLAG_X);
 
     //等值映射,先留着也许可以不用
     create_mapping(page_base, KERNEL_START_P, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
@@ -98,23 +123,45 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         print("pgtbl=%X, va=%X, pa=%X\n", pgtbl, va, pa);
         print("[info]\tsz=%X, pud=%X, pmd=%X, pd=%X\n", sz, num_pud, num_pmd, num_pd);
     #endif
-    for (i = 0; i < num_pud; i++)
+    for (i = 0; i < num_pud && num_pud >= 0; i++)
     {
-        addr_pud = alloc_frame(&frame_queue);
         vpn2 = (va >> 30) & 0x1FF;
-        add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
+        if (pgtbl[vpn2] == 0)
+        {
+            addr_pud = alloc_frame(&frame_queue);
+            add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
+        }
+        else
+        {
+            addr_pud = (pgtbl[vpn2] >> 10) << 12;
+        }
         jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
 
-        for (j = 0; j < jmax; j++)
+        for (j = 0; j < jmax && jmax >= 0; j++)
         {
-            addr_pmd = alloc_frame(&frame_queue);
             vpn1 = (va >> 21) & 0x1FF;
-            add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
+            if ( ((uint64 *)addr_pud)[vpn1] == 0 )
+            {
+                addr_pmd = alloc_frame(&frame_queue);
+                add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
+            }
+            else
+            {
+                addr_pmd = (((uint64 *)addr_pud)[vpn1] >> 10) << 12;
+            }
             kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
-            for (k = 0; k < kmax; k++)
+
+            for (k = 0; k < kmax && kmax >= 0; k++)
             {
                 vpn0 = (va >> 12) & 0x1FF;
-                add_entry(addr_pmd, vpn0, pa, perm);
+                if ( ((uint64 *)addr_pmd)[vpn0] == 0 )
+                {
+                    add_entry(addr_pmd, vpn0, pa, perm);
+                }
+                else
+                {
+                    kmax--;
+                }
                 va += PAGE_SIZE;
                 pa += FRAME_SIZE;
             }

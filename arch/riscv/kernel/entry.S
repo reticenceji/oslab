@@ -8,11 +8,15 @@
     ld \reg,0(sp)
     addi sp,sp,8
 .endm
-.equ SCAUSE_STI_MASK,0x5
+.equ SCAUSE_STI_NUM,0x8000000000000005
+.equ SCAUSE_SPF_NUM,0xf
+.equ SCAUSE_LPF_NUM,0xd
+.equ SCAUSE_IPF_NUM,0xc
 
 exception_addr_s:
 	#保存所有的寄存器
-	PUSH x2			# 将原来的sp压栈
+	PUSH x2			 # 将原来的sp压栈
+	# TODO 这里应该要切换到kernel sp的，之前好像一直没做？
 	PUSH x1			
     PUSH x3
 	PUSH x4
@@ -54,17 +58,47 @@ exception_addr_s:
 	
     csrr t0,scause
 	blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
-exception_table_s:					
+exception_table_s:	
+store_page_fault_s:
+	li t1,SCAUSE_SPF_NUM				#store page fault
+	bne t0,t1,load_page_fault_s
+	la a0,string_spf
+	call puts
+	call dead_loop
+	j exception_retaddr_s
+load_page_fault_s:
+	li t1,SCAUSE_LPF_NUM				#load page fault
+	bne t0,t1,instruction_page_fault_s	
+	la a0,string_lpf
+	call puts
+	call dead_loop
+	j exception_retaddr_s
+instruction_page_fault_s:
+	li t1,SCAUSE_IPF_NUM				#instruction page fault
+	bne t0,t1,other_exception_s
+	la a0,string_ipf
+	call puts
+	call dead_loop
+	j exception_retaddr_s
+other_exception_s:
+	POP t0
+	addi t0,t0,4
+    csrw sepc, t0
+	j exception_retaddr_s	
 
 interupt_table_s:
-	andi t1,t0,SCAUSE_STI_MASK			#对应于Supervisor timer interrupt
-	beq t1,zero,exception_retaddr_s
+	li t1,SCAUSE_STI_NUM			#对应于Supervisor timer interrupt
+	bne t0,t1,other_interupt_s
 	call sti_handler_s
     POP t0
     csrw sepc, t0
     ecall								#产生ecall_from_s_mode exception，重新设置mtimecmp
 	j exception_retaddr_s
-	
+other_interupt_s:
+	POP t0
+    csrw sepc, t0
+	j exception_retaddr_s	
+
 exception_retaddr_s:							
 	#恢复所有的寄存器
 	POP t0
@@ -142,3 +176,7 @@ __switch_to:
 	ld s11,104(a0)
     ret
     
+.section .rodata.entry
+string_lpf: .string "load page fault\n"
+string_spf: .string "store page fault\n"
+string_ipf: .string "instruction page fault\n"

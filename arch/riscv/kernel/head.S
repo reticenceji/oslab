@@ -10,6 +10,7 @@
 .endm
 .equ MTIME, 0x200bff8
 .equ MTIMECMP, 0x2004000
+.equ MAP_OFFSET, 0xffffffe000000000-0x80000000
 
 _start:
     la t0, _bss_start
@@ -20,10 +21,10 @@ loop_clear_bss:
     addi t0, t0, 1
     j loop_clear_bss 
 done_clear_bss:                 #循环的将.bss段内容设置为0
-                               
+
     li t0, MTIME
     ld t0, 0(t0)
-    li t1, 1000000000
+    li t1, 10000000
     add t0, t0, t1
     li t1, MTIMECMP
     sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
@@ -36,7 +37,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
 
     li t0, 0x7FF
-    addi t0, t0, 0xB
+    addi t0, t0, 0x12B
     csrw mstatus, t0            #mstatus[mpp] = mstatus[mie] = mstatus[sie] = 1
 
     la t0, _start_retaddr
@@ -50,30 +51,27 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
 _start_retaddr:
     
     # TODO 我觉得在这里设置Page table,设置stevc,设置satp;设置stevc,sp
-    la t0, virtual_next
+    #la t0, virtual_next
     #li t1,0xffffffe000000000-0x80000000  
     #add t0,t0,t1
-    csrw stvec, t0                  #设置supervisor mode异常处理地址
+    #csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
 
-#    li t0, 0xA0
-#    csrw mie, t0                    #开启时钟中断
     li t0,0x8000000000081000
     csrw satp,t0
 
-    #TODO timmy put things here
-    la t0, exception_addr_s
-#li t1, 0xffffffe000000000-0x80000000
-#add t0, t0, t1
+    li t1, MAP_OFFSET
+
+    la t0, exception_addr_s 
+    add t0, t0, t1
     csrw stvec, t0    #set s mode interupt handle place
 
     la t0, init_stack_top
-    li t1, 0xffffffe000000000-0x80000000  
-    add t0, t0, t1
-    mv sp, t0
-    # TODO timmy did not finish here
+    add sp, t0, t1
+    csrw sscratch,sp
 virtual_next:
     la t0, start_kernel
+    add t0, t0, t1
     jr t0
 #call start_kernel
 

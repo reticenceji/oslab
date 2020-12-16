@@ -11,6 +11,10 @@ static void init_epc();
 void task_init(void)
 {
     // print("%X\n",task_init);
+    #ifdef DEBUG
+        int *x=(int *)task_init;
+        x = 1;
+    #endif
     print("task init...\n");
     current = (struct task_struct*)(TASK_START_V);
     task[0] = current;
@@ -115,7 +119,7 @@ void schedule(void)
         }
     }
     if (current!=task[next])
-        print("[!]Switch from task %l to task %l, prio: %l, counter: %l\n",current->pid,task[next]->pid,task[next]->priority,task[next]->counter);
+        print("[!] Switch from task %l [task struct:0x%X, sp:0x%X] to task %l [task struct:0x%X, sp:0x%X], prio: %l, counter: %l\n", current->pid, current, current->thread.sp ,task[next]->pid, task[next], task[next]->thread.sp,task[next]->priority, task[next]->counter);
     switch_to(task[next]);
     #endif
 
@@ -157,8 +161,8 @@ void schedule(void)
     }
 
 	if(current != task[next]){
-	    print("[!]Switch from task %l to task %l, prio: %l, counter: %l\n", current->pid, task[next]->pid, task[next]->priority, task[next]->counter);
-	}
+        print("[!] Switch from task %l [task struct:0x%X, sp:0x%X] to task %l [task struct:0x%X, sp:0x%X], prio: %l, counter: %l\n", current->pid, current, current->thread.sp ,task[next]->pid, task[next], task[next]->thread.sp,task[next]->priority, task[next]->counter);
+}
 
 	print("tasks' priority changed\n");
     for( int i=1; i < NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
