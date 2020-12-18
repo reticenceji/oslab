@@ -64,21 +64,27 @@ store_page_fault_s:
 	bne t0,t1,load_page_fault_s
 	la a0,string_spf
 	call puts
-	call dead_loop
+	POP t0
+	addi t0,t0,4
+    csrw sepc, t0
 	j exception_retaddr_s
 load_page_fault_s:
 	li t1,SCAUSE_LPF_NUM				#load page fault
 	bne t0,t1,instruction_page_fault_s	
 	la a0,string_lpf
 	call puts
-	call dead_loop
+	POP t0
+	addi t0,t0,4
+    csrw sepc, t0
 	j exception_retaddr_s
 instruction_page_fault_s:
 	li t1,SCAUSE_IPF_NUM				#instruction page fault
 	bne t0,t1,other_exception_s
 	la a0,string_ipf
 	call puts
-	call dead_loop
+	POP t0
+	addi t0,t0,4
+    csrw sepc, t0
 	j exception_retaddr_s
 other_exception_s:
 	POP t0

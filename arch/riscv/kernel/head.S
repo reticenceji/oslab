@@ -24,7 +24,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
 
     li t0, MTIME
     ld t0, 0(t0)
-    li t1, 100000000
+    li t1, 1000000
     add t0, t0, t1
     li t1, MTIMECMP
     sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
@@ -59,6 +59,7 @@ _start_retaddr:
 
     li t0,0x8000000000081000
     csrw satp,t0
+    sfence.vma zero, zero
 
     li t1, MAP_OFFSET
 
