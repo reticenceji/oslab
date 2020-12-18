@@ -199,8 +199,8 @@ void dead_loop(void)
 static void init_epc()
 {
     __asm__ __volatile__(
-        "csrr t0,sstatus;\ 
-         li t1,0x100;\
+        "csrr t0,sstatus;\
+         li t1,0x120;\
          or t0,t0,t1;\
          csrw sstatus,t0;\
          csrw sepc,%0;\
