@@ -82,9 +82,7 @@ instruction_page_fault_s:
 	bne t0,t1,other_exception_s
 	la a0,string_ipf
 	call puts
-	POP t0
-	addi t0,t0,4
-    csrw sepc, t0
+	wfi
 	j exception_retaddr_s
 other_exception_s:
 	POP t0
