@@ -16,7 +16,7 @@ void task_init(void)
         *x = 1;
     #endif
     #ifdef DEBUGEXE
-    int (*x) (int)=(int (*)(int))"Hello world";
+    int (*x) (int)=(int (*)(int))"\x00\x00\x32\x97";
     int a=(*x)(5);
     #endif
     print("task init...\n");
