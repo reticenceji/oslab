@@ -94,7 +94,7 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     create_mapping(page_base, (uint64)&other_start + MAP_OFFSET, ((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
 
     //等值映射,先留着也许可以不用
-    create_mapping(page_base, KERNEL_START_P, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+    //create_mapping(page_base, KERNEL_START_P, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 
     //低地址的等值映射,可以理解为是那些外部设备map到内存的地方.
     create_mapping(page_base, UART_START, UART_START,UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);

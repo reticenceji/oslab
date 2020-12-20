@@ -51,29 +51,26 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
 _start_retaddr:
     
     # TODO 我觉得在这里设置Page table,设置stevc,设置satp;设置stevc,sp
-    #la t0, virtual_next
-    #li t1,0xffffffe000000000-0x80000000  
-    #add t0,t0,t1
-    #csrw stvec, t0                  #设置supervisor mode异常处理地址
+    la t0, virtual_next
+    li t1,0xffffffe000000000-0x80000000  
+    add t0,t0,t1
+    csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
 
     li t0,0x8000000000081000
     csrw satp,t0
+virtual_next:
     sfence.vma zero, zero
 
-    li t1, MAP_OFFSET
+    li t0,0x122
+    csrw sstatus,t0                 #
 
     la t0, exception_addr_s 
-    add t0, t0, t1
     csrw stvec, t0    #set s mode interupt handle place
 
-    la t0, init_stack_top
-    add sp, t0, t1
-    csrw sscratch,sp
-virtual_next:
-    la t0, start_kernel
-    add t0, t0, t1
-    jr t0
+    la sp, init_stack_top
+    csrw sscratch, sp
+    j start_kernel
 #call start_kernel
 
 #exception handlers
@@ -194,3 +191,5 @@ exception_retaddr_m:
     csrrw sp,mscratch,sp    
     mret
 
+.section .rodata.head
+debug_info: .string "I have come to here\n"
