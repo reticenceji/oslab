@@ -11,12 +11,26 @@ static void init_epc();
 void task_init(void)
 {
     // print("%X\n",task_init);
-    #ifdef DEBUGSTORE
+    #ifdef DEBUGSTORETEXT
         int *x=(int *)task_init;
         *x = 1;
     #endif
-    #ifdef DEBUGEXE
-    int (*x) (int)=(int (*)(int))"\x00\x00\x32\x97";
+    #ifdef DEBUGSTORERODATA
+        int *x=(int *)"\x97\x32\x00\x00";
+        *x = 1;
+    #endif
+    #ifdef DEBUGEXERODATA
+    int (*x) (int)=(int (*)(int))"\x97\x32\x00\x00";
+    int a=(*x)(5);
+    #endif
+    #ifdef DEBUGEXESTACK
+    char ins[] = "\x97\x32\x00\x00";
+    int (*x) (int)=(int (*)(int))ins;
+    int a=(*x)(5);
+    #endif
+    #ifdef DEBUGEXEDATA
+    static char ins[] = "\x97\x32\x00\x00";
+    int (*x) (int)=(int (*)(int))ins;
     int a=(*x)(5);
     #endif
     print("task init...\n");
