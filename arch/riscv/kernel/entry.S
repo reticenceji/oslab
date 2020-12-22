@@ -14,7 +14,7 @@
 .equ SCAUSE_IPF_NUM,0xc
 
 exception_addr_s:
-	#保存所有的寄存器
+	# TODO 我打算重构这里，这样PUSH效率好像有点低，不过问题倒也不大
 	PUSH x2			 # 将原来的sp压栈
 	# TODO 这里应该要切换到kernel sp的，之前好像一直没做？
 	PUSH x1			
@@ -59,6 +59,7 @@ exception_addr_s:
     csrr t0,scause
 	blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
 exception_table_s:	
+	#TODO 我打算重构这里，改成根据异常和中断号跳转
 store_page_fault_s:
 	li t1,SCAUSE_SPF_NUM				#store page fault
 	bne t0,t1,load_page_fault_s

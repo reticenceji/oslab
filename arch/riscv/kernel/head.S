@@ -49,8 +49,6 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     mret
 
 _start_retaddr:
-    
-    # TODO 我觉得在这里设置Page table,设置stevc,设置satp;设置stevc,sp
     la t0, virtual_next
     li t1,0xffffffe000000000-0x80000000  
     add t0,t0,t1
@@ -79,7 +77,6 @@ virtual_next:
 exception_addr_m:
 .globl exception_addr_m
 #save context     
-    # TODO 修改M mode的栈
     csrrw sp, mscratch, sp        # 交换sp和mscratch的值
     PUSH x2			              # 将原来的sp压栈
 	PUSH x1			

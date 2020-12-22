@@ -107,7 +107,6 @@ __attribute__((optimize("O0"))) uint64* paging_init()
 
 __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
-    // TODO 
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
     int num_pd, num_pmd, num_pud;
     /* 最后一张二级页表可能不能被三级页表填满，最后一张三级页表可能不能被entry填满 */
