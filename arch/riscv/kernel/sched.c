@@ -33,6 +33,8 @@ void task_init(void)
     int (*x) (int)=(int (*)(int))ins;
     int a=(*x)(5);
     #endif
+
+    //TODO map user processes here
     print("task init...\n");
     current = (struct task_struct*)(TASK_START_V);
     task[0] = current;
@@ -210,6 +212,7 @@ void dead_loop(void)
     while (1);
 }
 
+//TODO modify sstatus and change "dead_loop" to "main", jump to user mode
 static void init_epc()
 {
     __asm__ __volatile__(

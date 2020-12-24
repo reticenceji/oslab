@@ -59,6 +59,7 @@ struct task_struct {
      long pid;      // 进程标识符
     // Above Size Cost: 40 bytes
 
+    //TODO add sepc, sscratch, mm_struct *mm etc. here
     struct thread_struct thread; // 该进程状态段
 };
 

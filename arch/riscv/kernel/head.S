@@ -32,6 +32,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
     li t0, 0x20
     csrw mideleg, t0            #设置委托，时钟中断
     li t0, 0xB000
+    #TODO add delegation of ecall_from_user
     csrw medeleg, t0            #设置委托，instruction/load/store page fault
     li t0, 0xA0
     csrw mie, t0                #mie[mtie] = 1, sie[stie] = 1, 即允许时钟中断
