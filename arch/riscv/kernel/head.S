@@ -187,6 +187,3 @@ exception_retaddr_m:
 	POP x2
     csrrw sp,mscratch,sp    
     mret
-
-.section .rodata.head
-debug_info: .string "I have come to here\n"

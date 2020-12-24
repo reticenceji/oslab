@@ -12,7 +12,7 @@
 .equ SCAUSE_SPF_NUM,0xf
 .equ SCAUSE_LPF_NUM,0xd
 .equ SCAUSE_IPF_NUM,0xc
-
+.equ CODE_MASK,0xFF 		#取中断/异常号的mask
 exception_addr_s:
 	# TODO 我打算重构这里，这样PUSH效率好像有点低，不过问题倒也不大
 	PUSH x2			 # 将原来的sp压栈
@@ -58,11 +58,33 @@ exception_addr_s:
 	
     csrr t0,scause
 	blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
-exception_table_s:	
+	la t1,exception_table_s
+	andi t0,t0,CODE_MASK					#t0是异常编号
+	slli t0,t0,2
+	add t1,t1,t0
+	jr t1
+	mv a0,t0
+	call puti
+exception_table_s:
+	j other_exception_s				#code==0
+	j other_exception_s	
+	j other_exception_s	
+	j other_exception_s	
+	j other_exception_s	
+	j other_exception_s				#code==5
+	j other_exception_s	
+	j other_exception_s	
+	j other_exception_s	
+	j other_exception_s	
+	j other_exception_s				#code==A
+	j other_exception_s	
+	j instruction_page_fault_s		#code==C
+	j load_page_fault_s				#code==D
+	j other_exception_s	
+	j store_page_fault_s			#code==F
+
 	#TODO 我打算重构这里，改成根据异常和中断号跳转
 store_page_fault_s:
-	li t1,SCAUSE_SPF_NUM				#store page fault
-	bne t0,t1,load_page_fault_s
 	la a0,string_spf
 	call puts
 	POP t0
@@ -70,8 +92,6 @@ store_page_fault_s:
     csrw sepc, t0
 	j exception_retaddr_s
 load_page_fault_s:
-	li t1,SCAUSE_LPF_NUM				#load page fault
-	bne t0,t1,instruction_page_fault_s	
 	la a0,string_lpf
 	call puts
 	POP t0
@@ -79,8 +99,6 @@ load_page_fault_s:
     csrw sepc, t0
 	j exception_retaddr_s
 instruction_page_fault_s:
-	li t1,SCAUSE_IPF_NUM				#instruction page fault
-	bne t0,t1,other_exception_s
 	la a0,string_ipf
 	call puts
 	wfi
