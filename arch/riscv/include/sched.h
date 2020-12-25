@@ -49,9 +49,14 @@ struct thread_struct {
     unsigned long long s10;
     unsigned long long s11;
 };
-
+/* 进程内存管理结构 */
+struct mm_struct 
+{
+    unsigned long long satp;
+};
 /* 进程数据结构 */
-struct task_struct {
+struct task_struct
+{
      long state;    // 进程状态 Lab3中进程初始化时置为TASK_RUNNING
      long counter;  // 运行剩余时间 
      long priority; // 运行优先级 1最高 5最低
@@ -60,6 +65,9 @@ struct task_struct {
     // Above Size Cost: 40 bytes
 
     //TODO add sepc, sscratch, mm_struct *mm etc. here
+    unsigned long long sepc;
+    unsigned long long sscratch;
+    struct mm_struct *mm;
     struct thread_struct thread; // 该进程状态段
 };
 

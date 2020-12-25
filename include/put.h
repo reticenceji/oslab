@@ -1,6 +1,6 @@
 #ifndef PUT_H
 #define PUT_H
-#define UART16550A_DR (volatile unsigned char *)0x10000000
+#define UART16550A_DR (volatile unsigned char *)0xffffffdf90000000
 
 typedef __builtin_va_list va_list;
 #define va_start(v,l)	__builtin_va_start(v,l)
@@ -11,6 +11,6 @@ void puti(int num);
 int puts(const char *s);
 void print(const char *fmt, ...);
 
-#define putchar(c) (*(volatile unsigned char *)0x10000000)=(unsigned char)(c)
+#define putchar(c) (*(volatile unsigned char *)0xffffffdf90000000)=(unsigned char)(c)
 
 #endif

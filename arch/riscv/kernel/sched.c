@@ -36,7 +36,7 @@ void task_init(void)
 
     //TODO map user processes here
     print("task init...\n");
-    current = (struct task_struct*)(TASK_START_V);
+    current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->counter = 0;
@@ -47,7 +47,7 @@ void task_init(void)
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
-        task[i] = (struct task_struct*)(TASK_START_V + i*TASK_SIZE);
+        task[i] = (struct task_struct*)(USER_TASK_START_V + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = rand();
         task[i]->priority = 5;
@@ -63,7 +63,7 @@ void task_init(void)
     #ifdef PRIORITY
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
-        task[i] = (struct task_struct*)(TASK_START_V + i*TASK_SIZE);
+        task[i] = (struct task_struct*)(USER_TASK_START_V + i*TASK_SIZE);
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 7-(i-1)%4;
         task[i]->priority = 5;
@@ -216,12 +216,9 @@ void dead_loop(void)
 static void init_epc()
 {
     __asm__ __volatile__(
-        "csrr t0,sstatus;\
-         li t1,0x120;\
-         or t0,t0,t1;\
-         csrw sstatus,t0;\
-         csrw sepc,%0;\
+        "li t1,0x20;\
+         csrw sstatus,t1;\
+         csrw sepc,0x0;\
          sret;"
-        :
-        :"r"(dead_loop));
+         );
 }
