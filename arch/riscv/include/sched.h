@@ -33,7 +33,8 @@ extern struct task_struct *current;
 extern struct task_struct * task[NR_TASKS];
 
 /* 进程状态段数据结构 */
-struct thread_struct {
+struct thread_struct
+{
     unsigned long long ra;
     unsigned long long sp;
     unsigned long long s0;
@@ -86,6 +87,9 @@ void switch_to(struct task_struct* next);
 
 /* 死循环 */
 void dead_loop(void);
+
+/* 获取当前进程pid */
+long getpid(void);
 
 #endif
 

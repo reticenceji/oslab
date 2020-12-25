@@ -34,7 +34,6 @@ void task_init(void)
     int a=(*x)(5);
     #endif
 
-    //TODO map user processes here
     print("task init...\n");
     current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;
@@ -47,13 +46,23 @@ void task_init(void)
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
     {
-        task[i] = (struct task_struct*)(USER_TASK_START_V + i*TASK_SIZE);
+        unsigned long long pgtbl = alloc_frame();
+
+        task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
+
+        task[i]->mm->satp = pgtbl;
+        create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P, USER_TASK_SIZE,  FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P,  USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
+        kernel_mapping((uint64*)pgtbl);
+
         task[i]->state = TASK_RUNNING;
         task[i]->counter = rand();
         task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
-        task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
+
+        task[i]->thread.sp = USER_TASK_SIZE;
+        task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
         task[i]->thread.ra = (unsigned long long)init_epc;
         print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
@@ -62,14 +71,24 @@ void task_init(void)
 
     #ifdef PRIORITY
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
-    {
-        task[i] = (struct task_struct*)(USER_TASK_START_V + i*TASK_SIZE);
+    {        
+        unsigned long long pgtbl = alloc_frame();
+
+        task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
+
+        task[i]->mm->satp = pgtbl;
+        create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P, USER_TASK_SIZE,  FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P,  USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
+        kernel_mapping((uint64*)pgtbl);
+
         task[i]->state = TASK_RUNNING;
         task[i]->counter = 7-(i-1)%4;
         task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
-        task[i]->thread.sp = (unsigned long long)task[i] + TASK_SIZE;
+
+        task[i]->thread.sp = USER_TASK_SIZE;
+        task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;
         task[i]->thread.ra = (unsigned long long)init_epc;
         print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
     }
@@ -216,7 +235,7 @@ void dead_loop(void)
 static void init_epc()
 {
     __asm__ __volatile__(
-        "li t1,0x20;\
+        "li t1,0x22;\
          csrw sstatus,t1;\
          csrw sepc,0x0;\
          sret;"

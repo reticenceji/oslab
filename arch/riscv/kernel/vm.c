@@ -37,16 +37,18 @@ static int fq_is_empty(frame_queue_t *fq)
     return fq->front == fq->rear;
 }
 
-void init_frame_queue(frame_queue_t *fq)
+void init_frame_queue()
 {
+    frame_queue_t *fq = &frame_queue;
     fq->front = 0;
     fq->capacity = TEST_FRAME_NUM + 1;
     for (fq->rear=0;fq->rear<TEST_FRAME_NUM;fq->rear++)
         fq->frame[fq->rear] = KERNEL_START_P + KERNEL_SIZE + FRAME_SIZE*fq->rear;
 }
 
-uint64 alloc_frame(frame_queue_t *fq)
+uint64 alloc_frame()
 {
+    frame_queue_t *fq = &frame_queue;
     if (fq_is_empty(fq))
     {
         return NULL;
@@ -56,8 +58,9 @@ uint64 alloc_frame(frame_queue_t *fq)
     return valid_frame;     
 }
 
-void free_frame(frame_queue_t *fq)
+void free_frame()
 {
+    frame_queue_t *fq = &frame_queue;
     if (fq_is_full(fq))
     {
         return;
@@ -71,38 +74,40 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     #ifdef DEBUGTEST
     print("[*]\tFunction paging_init\n[info] frame_queue:%X\n",&frame_queue);
     #endif
-    uint64* page_base;
-    init_frame_queue(&frame_queue);
-    page_base = (uint64*)alloc_frame(&frame_queue);
 
-    //映射到高地址,没有关注权限位
-    //create_mapping(page_base, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-    
-    //text段映射, r-x
-    create_mapping(page_base, ((uint64)&text_start) + MAP_OFFSET, KERNEL_START_P, (uint64)&text_end - KERNEL_START_P, FLAG_R|FLAG_X|FLAG_V);
-
-    //rodata段映射, r--
-    create_mapping(page_base, ((uint64)&rodata_start) + MAP_OFFSET, ((uint64)&rodata_start), (uint64)&rodata_end - ((uint64)&rodata_start), FLAG_R|FLAG_V);
-
-    //data段映射, rw-
-    create_mapping(page_base, ((uint64)&data_start) + MAP_OFFSET, ((uint64)&data_start), (uint64)&data_end - ((uint64)&data_start), FLAG_R|FLAG_W|FLAG_V);
-
-    //bss段映射, rw-
-    create_mapping(page_base, ((uint64)&bss_start) + MAP_OFFSET, ((uint64)&bss_start), (uint64)&bss_end - ((uint64)&bss_start), FLAG_R|FLAG_W|FLAG_V);
-
-    //other映射, rw-
-    create_mapping(page_base, (uint64)&other_start + MAP_OFFSET, ((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
-
-    //等值映射,先留着也许可以不用
-    //create_mapping(page_base, KERNEL_START_P, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-
-    //低地址的等值映射,可以理解为是那些外部设备map到内存的地方.
-    create_mapping(page_base, UART_START, UART_START,UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+    uint64* pgtbl;
+    init_frame_queue();
+    pgtbl = (uint64*)alloc_frame();
+    kernel_mapping(pgtbl); 
 
     #ifdef DEBUGTEST
     print("[*]\tFunction paging_init DONE\n");  
     #endif
-    return page_base;
+    return pgtbl;
+}
+
+__attribute__((optimize("O0"))) void kernel_mapping(uint64 *pgtbl)
+{ 
+    //映射到高地址,没有关注权限位
+    //create_mapping(pgtbl, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+    
+    //text段映射, r-x
+    create_mapping(pgtbl, ((uint64)&text_start) + MAP_OFFSET, KERNEL_START_P, (uint64)&text_end - KERNEL_START_P, FLAG_R|FLAG_X|FLAG_V);
+
+    //rodata段映射, r--
+    create_mapping(pgtbl, ((uint64)&rodata_start) + MAP_OFFSET, ((uint64)&rodata_start), (uint64)&rodata_end - ((uint64)&rodata_start), FLAG_R|FLAG_V);
+
+    //data段映射, rw-
+    create_mapping(pgtbl, ((uint64)&data_start) + MAP_OFFSET, ((uint64)&data_start), (uint64)&data_end - ((uint64)&data_start), FLAG_R|FLAG_W|FLAG_V);
+
+    //bss段映射, rw-
+    create_mapping(pgtbl, ((uint64)&bss_start) + MAP_OFFSET, ((uint64)&bss_start), (uint64)&bss_end - ((uint64)&bss_start), FLAG_R|FLAG_W|FLAG_V);
+
+    //other映射, rw-
+    create_mapping(pgtbl, (uint64)&other_start + MAP_OFFSET, ((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
+
+    //UART的映射,可以理解为是那些外部设备map到内存的地方.
+    create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 }
 
 __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
@@ -129,7 +134,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         vpn2 = (va >> 30) & 0x1FF;
         if (pgtbl[vpn2] == 0)
         {
-            addr_pud = alloc_frame(&frame_queue);
+            addr_pud = alloc_frame();
             add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
         }
         else
@@ -143,7 +148,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             vpn1 = (va >> 21) & 0x1FF;
             if ( ((uint64 *)addr_pud)[vpn1] == 0 )
             {
-                addr_pmd = alloc_frame(&frame_queue);
+                addr_pmd = alloc_frame();
                 add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
             }
             else

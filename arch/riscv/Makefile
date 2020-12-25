@@ -10,10 +10,10 @@ System.map: vmlinux
 	nm ../../$^ >../../$@
 Image: vmlinux
 	$(OBJCOPY) -O binary ../../vmlinux boot/Image --strip-all
-vmlinux: put.o rand.o main.o test.o kernel/head.o kernel/entry.o kernel/sched.o kernel/strap.o kernel/vm.o kernel/handler.o kernel/vmlinux.lds
+vmlinux: put.o rand.o main.o test.o kernel/head.o kernel/entry.o kernel/sched.o kernel/strap.o kernel/vm.o kernel/syscall.o kernel/handler.o kernel/vmlinux.lds
 	$(LD) $(word 1,$^) $(word 2,$^) $(word 3,$^) $(word 4,$^) \
 		kernel/head.o kernel/entry.o kernel/sched.o kernel/strap.o \
-		kernel/vm.o kernel/handler.o -T kernel/vmlinux.lds -o ../../$@
+		kernel/vm.o kernel/syscall.o kernel/handler.o -T kernel/vmlinux.lds -o ../../$@
 
 
 #ld命令 是GNU的连接器，将目标文件连接为可执行程序。

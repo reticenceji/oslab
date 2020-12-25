@@ -17,5 +17,8 @@ sched.o: sched.c rand.o vm.o
 vm.o: vm.c
 	$(GCC) $(CFLAG) -c vm.c -o $@
 
-handler.o: handler.c
+syscall.o: syscall.c
+	$(GCC) $(CFLAG) -c syscall.c -o $@
+
+handler.o: handler.c syscall.o
 	$(GCC) $(CFLAG) -c handler.c -o $@
