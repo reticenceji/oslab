@@ -222,3 +222,8 @@ static void init_epc()
          sret;"
          );
 }
+
+long getpid()
+{
+    return current->pid;
+}

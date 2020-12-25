@@ -1,5 +1,3 @@
-typedef unsigned long long size_t ;
-typedef unsigned long long uintptr_t ;
 #include "put.h"
 #include "syscall.h"
 //异常号
