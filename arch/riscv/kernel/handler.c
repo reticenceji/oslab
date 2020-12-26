@@ -33,7 +33,7 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
             ret0 = sys_getpid();
             break;
         case SYS_WRITE:
-            ret0 = sys_write(regs[REG_A0],regs[REG_A1],regs[REG_A2]);
+            ret0 = sys_write(regs[REG_A0],(const char*)regs[REG_A1],regs[REG_A2]);
             break;
         default:
             break;
