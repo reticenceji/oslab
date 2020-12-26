@@ -201,7 +201,7 @@ __switch_to:
 	sd s10,96(a1)
 	sd s11,104(a1)
 
-	ld t0,-16(a1)
+	ld t0,-16(a0)
 	csrw sscratch,t0
 	ld ra,0(a0)
 	ld sp,8(a0)
