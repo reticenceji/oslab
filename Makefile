@@ -25,8 +25,8 @@ subsystem:
 clean:
 	find -name "*.o"  | xargs rm -fv && rm -v vmlinux System.map arch/riscv/boot/Image && find -name ".*.swp" | xargs rm -fv
 run:
-	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux
+	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux -initrd hello.bin
 debug:
-	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux -S -s
+	$(MAKE) -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux -S -s -initrd hello.bin
 #force and recursive remove all object files.
 #.PHONY表示伪目标，伪目标标记后的命令，不会和目录下文件重复。
