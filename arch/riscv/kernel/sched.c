@@ -231,7 +231,6 @@ void dead_loop(void)
     while (1);
 }
 
-//TODO modify sstatus and change "dead_loop" to "main", jump to user mode
 static void init_epc()
 {
     __asm__ __volatile__(

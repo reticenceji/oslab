@@ -1,5 +1,6 @@
 #include "put.h"
 #include "syscall.h"
+#include "sched.h"
 #define NR_OPEN 2//mostly open one case
 
 
