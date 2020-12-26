@@ -49,6 +49,7 @@ void task_init(void)
         unsigned long long pgtbl = alloc_frame();
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
+        task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
         task[i]->mm->satp = pgtbl;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P, USER_TASK_SIZE,  FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
@@ -75,6 +76,7 @@ void task_init(void)
         unsigned long long pgtbl = alloc_frame();
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
+        task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
         task[i]->mm->satp = pgtbl;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P, USER_TASK_SIZE,  FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
