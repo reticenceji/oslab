@@ -81,8 +81,10 @@ void task_init(void)
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
         task[i]->mm->satp = pgtbl;
-        create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P, USER_TASK_SIZE,  FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P,  USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
+        create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
+                        USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
+        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P+(i-1)*USER_STACK_SIZE,
+                        USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
         kernel_mapping((uint64*)pgtbl);
 
         task[i]->state = TASK_RUNNING;
