@@ -23,6 +23,7 @@ static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm)
 {
     ((uint64 *)page_addr)[vpn] = ((ppn >> 12) << 10) + perm;
     #ifdef DEBUGTEST
+        if (__is_page_open())
         print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 10)+perm);
     #endif
     return;
@@ -72,18 +73,10 @@ void free_frame()
 
 __attribute__((optimize("O0"))) uint64* paging_init()
 {
-    #ifdef DEBUGTEST
-    print("[*]\tFunction paging_init\n[info] frame_queue:%X\n",&frame_queue);
-    #endif
-
     uint64* pgtbl;
     init_frame_queue();
     pgtbl = (uint64*)alloc_frame();
     kernel_mapping(pgtbl); 
-
-    #ifdef DEBUGTEST
-    print("[*]\tFunction paging_init DONE\n");  
-    #endif
     return pgtbl;
 }
 
@@ -128,13 +121,8 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
     num_pd = (sz + PAGE_SIZE-1) >> 12;
     num_pmd = (num_pd + ENTRY_PER_PAGE-1) >> 9;
     num_pud = (num_pmd + ENTRY_PER_PAGE-1) >> 9;
-    #ifdef DEBUGTEST
-        print("[*] Function create_mapping START\n");
-        print("pgtbl=%X, va=%X, pa=%X\n", pgtbl, va, pa);
-        print("[info]\tsz=%X, pud=%X, pmd=%X, pd=%X\n", sz, num_pud, num_pmd, num_pd);
-    #endif
     flag = __is_page_open();
-    if (flag==1) pgtbl = pgtbl+MAP_OFFSET;
+    if (flag) pgtbl = (uint64 *)VP(pgtbl);
     for (i = 0; i < num_pud && num_pud >= 0; i++)
     {
         vpn2 = (va >> 30) & 0x1FF;
@@ -148,7 +136,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             addr_pud = (pgtbl[vpn2] >> 10) << 12;
         }
         jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
-        if (flag==1) addr_pud=VP(addr_pud);
+        if (flag) addr_pud=(uint64)VP(addr_pud);
 
         for (j = 0; j < jmax && jmax >= 0; j++)
         {
@@ -163,7 +151,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
                 addr_pmd = (((uint64 *)addr_pud)[vpn1] >> 10) << 12;
             }
             kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
-            if (flag==1) addr_pmd=VP(addr_pmd);
+            if (flag) addr_pmd=(uint64)VP(addr_pmd);
 
             for (k = 0; k < kmax && kmax >= 0; k++)
             {
@@ -181,8 +169,5 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             }
         }
     }
-    #ifdef DEBUGTEST
-        print("[*]Done create_mapping\n");  
-    #endif
     return;
 }
