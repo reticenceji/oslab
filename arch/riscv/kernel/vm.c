@@ -10,6 +10,7 @@ extern uint64 data_end;
 extern uint64 bss_start;
 extern uint64 bss_end;
 extern uint64 other_start;
+extern uint64 _end;
 
 /* 判断队列是否为满, 为满返回1, 否则返回0 */
 static int fq_is_full(frame_queue_t *fq);
@@ -106,6 +107,9 @@ __attribute__((optimize("O0"))) void kernel_mapping(uint64 *pgtbl)
     //other映射, rw-
     create_mapping(pgtbl, (uint64)&other_start + MAP_OFFSET, ((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
 
+    //把Kernel剩下的allocable空间也都映射了
+    create_mapping(pgtbl, (uint64)&_end + MAP_OFFSET, ((uint64)&_end), KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
+
     //UART的映射,可以理解为是那些外部设备map到内存的地方.
     create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 }
@@ -114,13 +118,13 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
 {
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
     int num_pd, num_pmd, num_pud;
+    int flag=0;   //Flag表示我们现在是否开启了页表
     /* 最后一张二级页表可能不能被三级页表填满，最后一张三级页表可能不能被entry填满 */
     int jmax, kmax;
     uint64 addr_pd, addr_pmd, addr_pud;
     int i, j, k;
     int vpn2, vpn1, vpn0;
-    //va=(va%0x1000)?(((va<<12)+1)>>12):va;
-    //pa=(pa%0x1000)?(((pa<<12)+1)>>12):pa;
+
     num_pd = (sz + PAGE_SIZE-1) >> 12;
     num_pmd = (num_pd + ENTRY_PER_PAGE-1) >> 9;
     num_pud = (num_pmd + ENTRY_PER_PAGE-1) >> 9;
@@ -129,6 +133,8 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         print("pgtbl=%X, va=%X, pa=%X\n", pgtbl, va, pa);
         print("[info]\tsz=%X, pud=%X, pmd=%X, pd=%X\n", sz, num_pud, num_pmd, num_pd);
     #endif
+    flag = __is_page_open();
+    if (flag==1) pgtbl = pgtbl+MAP_OFFSET;
     for (i = 0; i < num_pud && num_pud >= 0; i++)
     {
         vpn2 = (va >> 30) & 0x1FF;
@@ -142,6 +148,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             addr_pud = (pgtbl[vpn2] >> 10) << 12;
         }
         jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
+        if (flag==1) addr_pud=VP(addr_pud);
 
         for (j = 0; j < jmax && jmax >= 0; j++)
         {
@@ -156,6 +163,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
                 addr_pmd = (((uint64 *)addr_pud)[vpn1] >> 10) << 12;
             }
             kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
+            if (flag==1) addr_pmd=VP(addr_pmd);
 
             for (k = 0; k < kmax && kmax >= 0; k++)
             {

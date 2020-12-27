@@ -30,8 +30,13 @@
 #define KERNEL_ALLOCABLE_START_P KERNEL_END_P
 #define KERNEL_ALLOCABLE_SIZE 0xF000000     
 #define KERNEL_ALLOCABLE_END_P (KERNEL_ALLOCABLE_START_P+KERNEL_ALLOCABLE_SIZE)
-// 我们对Kernel Space采用偏移的映射方式，这就是偏移量
+/* 我们对Kernel Space采用偏移的映射方式，这就是偏移量
+ * VP宏函数把kernel space的物理地址变成虚拟地址
+ * PP宏函数把kernel space的虚拟地址变成物理地址
+ */
 #define MAP_OFFSET (KERNEL_START_V - KERNEL_START_P)
+#define VP(X) ((void *)(X)+MAP_OFFSET)
+#define PP(X) ((void *)(X)-MAP_OFFSET)      
 
 #define KERNEL_START_V 0xffffffe000000000
 #define KERNEL_END_V (KERNEL_START_V + KERNEL_SIZE)
@@ -95,4 +100,5 @@ uint64* paging_init();
 /* 映射内核页表 */
 void kernel_mapping(uint64 *pgtbl);
 
+int __is_page_open();
 #endif

@@ -218,3 +218,10 @@ __switch_to:
 	ld s10,96(a0)
 	ld s11,104(a0)
     ret
+
+.globl __is_page_open
+.type __is_page_open,@function
+__is_page_open:
+	csrr a0,satp
+	slli a0,a0,60 
+	ret
