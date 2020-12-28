@@ -61,78 +61,20 @@ exception_addr_s:
  	mv a2,sp			#第三个参数 regs
 	call handler_s		#所有的异常都在这里处理
 	j exception_retaddr_s
-# 	la t1,exception_table_s
-# 	andi t0,t0,CODE_MASK				#t0是异常编号
-# 	slli t0,t0,2
-# 	add t1,t1,t0
-# 	jr t1
-# exception_table_s:
-# 	j other_exception_s				#code==0
-# 	j other_exception_s	
-# 	j other_exception_s	
-# 	j other_exception_s	
-# 	j other_exception_s	
-# 	j other_exception_s				#code==5
-# 	j other_exception_s	
-# 	j other_exception_s	
-# 	j ecall_from_user_s				#code==8
-# 	j other_exception_s	
-# 	j other_exception_s				#code==A
-# 	j other_exception_s	
-# 	j instruction_page_fault_s		#code==C
-# 	j load_page_fault_s				#code==D
-# 	j other_exception_s	
-# 	j store_page_fault_s			#code==F
-
-# store_page_fault_s:
-# 	la a0,string_spf
-# 	call puts
-# 	POP t0
-# 	addi t0,t0,4
-#     csrw sepc, t0
-# 	j exception_retaddr_s
-# load_page_fault_s:
-# 	la a0,string_lpf
-# 	call puts
-# 	POP t0
-# 	addi t0,t0,4
-#     csrw sepc, t0
-# 	j exception_retaddr_s
-# instruction_page_fault_s:
-# 	la a0,string_ipf
-# 	call puts
-# 	wfi
-# 	j exception_retaddr_s
-# ecall_from_user_s:
-# 	csrr a0,scause		#第一个参数 scause
-# 	csrr a1,sepc		#第二个参数 sepc
-# 	mv a2,sp			#第三个参数 regs
-# 	call handler_s
-# 	POP t0
-# 	addi t0,t0,4
-#     csrw sepc, t0
-# 	j exception_retaddr_s
-# other_exception_s:
-# 	POP t0
-# 	addi t0,t0,4
-#     csrw sepc, t0
-# 	j exception_retaddr_s	
 
 interupt_table_s:
 	li t1,SCAUSE_STI_NUM			#对应于Supervisor timer interrupt
 	bne t0,t1,other_interupt_s
 	call sti_handler_s
-    POP t0
-    csrw sepc, t0
     ecall								#产生ecall_from_s_mode exception，重新设置mtimecmp
 	j exception_retaddr_s
 other_interupt_s:
-	POP t0
-    csrw sepc, t0
 	j exception_retaddr_s	
 
 exception_retaddr_s:							
 	#恢复所有的寄存器
+	POP t0
+    csrw sepc, t0
 	POP t0
 	csrw stval, t0 
 	POP t0
