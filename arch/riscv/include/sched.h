@@ -83,6 +83,7 @@ void schedule(void);
 
 /* 切换当前任务current到下一个任务next */
 extern struct thread_struct* __switch_to(struct thread_struct* current,struct thread_struct* prev);
+extern struct thread_struct* __switch_page(unsigned long long current_satp);
 void switch_to(struct task_struct* next);
 
 /* 死循环 */

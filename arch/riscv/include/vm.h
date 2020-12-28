@@ -71,6 +71,8 @@
 #define FLAG_A 0x12
 #define FLAG_D 0x14
 
+/* 页表模式SV39 */
+#define MODE_SV39 0x8000000000000000
 typedef unsigned long long uint64;  //指向一个地址
 
 /* 循环队列实现物理内存管理 */

@@ -39,6 +39,8 @@ void task_init(void)
     current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
+    //TODO task[0]身为idle程序也要把当前的satp存下来
+    //task[0]->mm->satp = ;
     task[0]->counter = 0;
     task[0]->priority = 5;
     task[0]->blocked = 0;
@@ -52,7 +54,7 @@ void task_init(void)
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
-        task[i]->mm->satp = pgtbl;
+        task[i]->mm->satp = MODE_SV39 | pgtbl>>12;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
         create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P+(i-1)*USER_STACK_SIZE,
@@ -81,7 +83,7 @@ void task_init(void)
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
-        task[i]->mm->satp = pgtbl;
+        task[i]->mm->satp = MODE_SV39 | pgtbl>>12;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
         create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P+(i-1)*USER_STACK_SIZE,
