@@ -23,14 +23,14 @@ exception_addr_s:
 	PUSH x7
 	PUSH x8
 	PUSH x9
-	PUSH x10			# a0 == sp+0x128
-	PUSH x11			# a1 == sp+0x120
+	PUSH x10			
+	PUSH x11			
 	PUSH x12
 	PUSH x13
 	PUSH x14
 	PUSH x15			# x15 == sp+0x100
 	PUSH x16
-	PUSH x17
+	PUSH x17			# a7 == sp+0x90
 	PUSH x18
 	PUSH x19
 	PUSH x20

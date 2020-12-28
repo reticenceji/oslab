@@ -9,14 +9,14 @@
 #define SYS_WRITE 64
 #define SYS_GETPID 172
 //用来在stack上寻址
-#define REG_A0 37
-#define REG_A1 36
-#define REG_A2 35
-#define REG_A3 34
-#define REG_A4 33
-#define REG_A5 32
-#define REG_A6 31
-#define REG_A7 30
+#define REG_A0 25
+#define REG_A1 24
+#define REG_A2 23
+#define REG_A3 22
+#define REG_A4 21
+#define REG_A5 20
+#define REG_A6 19
+#define REG_A7 18
 #define CSR_SEPC 0
 
 
