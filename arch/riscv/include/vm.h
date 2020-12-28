@@ -35,8 +35,8 @@
  * PP宏函数把kernel space的虚拟地址变成物理地址
  */
 #define MAP_OFFSET (KERNEL_START_V - KERNEL_START_P)
-#define VP(X) ((void *)(X)+MAP_OFFSET)
-#define PP(X) ((void *)(X)-MAP_OFFSET)      
+#define VP(X) ((uint64)(X)+MAP_OFFSET)
+#define PP(X) ((uint64)(X)-MAP_OFFSET)      
 
 #define KERNEL_START_V 0xffffffe000000000
 #define KERNEL_END_V (KERNEL_START_V + KERNEL_SIZE)

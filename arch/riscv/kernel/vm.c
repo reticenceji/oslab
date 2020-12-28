@@ -45,7 +45,7 @@ void init_frame_queue()
     fq->front = 0;
     fq->capacity = TEST_FRAME_NUM + 1;
     for (fq->rear=0;fq->rear<TEST_FRAME_NUM;fq->rear++)
-        fq->frame[fq->rear] = KERNEL_START_P + KERNEL_SIZE + FRAME_SIZE*fq->rear;
+        fq->frame[fq->rear] = KERNEL_ALLOCABLE_START_P + FRAME_SIZE*fq->rear;
 }
 
 uint64 alloc_frame()
@@ -76,36 +76,28 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     uint64* pgtbl;
     init_frame_queue();
     pgtbl = (uint64*)alloc_frame();
-    kernel_mapping(pgtbl); 
+    create_mapping(pgtbl, VP((uint64)&text_start) , (uint64)&text_start, (uint64)&text_end - (uint64)&text_start, FLAG_R|FLAG_X|FLAG_V);
+    create_mapping(pgtbl, VP((uint64)&rodata_start), (uint64)&rodata_start, (uint64)&rodata_end - (uint64)&rodata_start, FLAG_R|FLAG_V);
+    create_mapping(pgtbl, VP((uint64)&data_start) , (uint64)&data_start, (uint64)&data_end - (uint64)&data_start, FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, VP((uint64)&bss_start), (uint64)&bss_start, (uint64)&bss_end - (uint64)&bss_start, FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, VP((uint64)&other_start), (uint64)&other_start, KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
     return pgtbl;
 }
 
 __attribute__((optimize("O0"))) void kernel_mapping(uint64 *pgtbl)
 { 
-    //映射到高地址,没有关注权限位
-    //create_mapping(pgtbl, KERNEL_START_V, KERNEL_START_P, KERNEL_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-    
-    //text段映射, r-x
-    create_mapping(pgtbl, ((uint64)&text_start) + MAP_OFFSET, KERNEL_START_P, (uint64)&text_end - KERNEL_START_P, FLAG_R|FLAG_X|FLAG_V);
-
-    //rodata段映射, r--
-    create_mapping(pgtbl, ((uint64)&rodata_start) + MAP_OFFSET, ((uint64)&rodata_start), (uint64)&rodata_end - ((uint64)&rodata_start), FLAG_R|FLAG_V);
-
-    //data段映射, rw-
-    create_mapping(pgtbl, ((uint64)&data_start) + MAP_OFFSET, ((uint64)&data_start), (uint64)&data_end - ((uint64)&data_start), FLAG_R|FLAG_W|FLAG_V);
-
-    //bss段映射, rw-
-    create_mapping(pgtbl, ((uint64)&bss_start) + MAP_OFFSET, ((uint64)&bss_start), (uint64)&bss_end - ((uint64)&bss_start), FLAG_R|FLAG_W|FLAG_V);
-
-    //other映射, rw-
-    create_mapping(pgtbl, (uint64)&other_start + MAP_OFFSET, ((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
-
-    //把Kernel剩下的allocable空间也都映射了
-    create_mapping(pgtbl, (uint64)&_end + MAP_OFFSET, ((uint64)&_end), KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
-
-    //UART的映射,可以理解为是那些外部设备map到内存的地方.
+    create_mapping(pgtbl, (uint64)&text_start, PP((uint64)&text_start), (uint64)&text_end - (uint64)&text_start, FLAG_R|FLAG_X|FLAG_V);
+    create_mapping(pgtbl, (uint64)&rodata_start, PP((uint64)&rodata_start), (uint64)&rodata_end - (uint64)&rodata_start, FLAG_R|FLAG_V);
+    create_mapping(pgtbl, (uint64)&data_start, PP((uint64)&data_start), (uint64)&data_end - (uint64)&data_start, FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, (uint64)&bss_start, PP((uint64)&bss_start), (uint64)&bss_end - (uint64)&bss_start, FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, (uint64)&other_start, PP((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
+    create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 }
+
+
 
 __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {

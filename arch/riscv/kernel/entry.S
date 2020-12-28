@@ -10,11 +10,6 @@
 .equ SCAUSE_STI_NUM,0x8000000000000005
 .equ CODE_MASK,0xFF 		#取中断/异常号的mask
 
-.section .rodata.entry
-string_lpf: .string "load page fault\n"
-string_spf: .string "store page fault\n"
-string_ipf: .string "instruction page fault\n"
-
 .section .text.entry
 exception_addr_s:
 	# TODO 我打算重构这里，这样PUSH效率好像有点低，不过问题倒也不大
