@@ -6,6 +6,7 @@
 struct task_struct *current;
 struct task_struct *task[NR_TASKS];
 static void init_epc();
+static void init_epc0();
 
 /* 进程初始化 创建四个dead_loop进程 */ 
 void task_init(void)
@@ -69,7 +70,7 @@ void task_init(void)
         task[i]->thread.ra = (unsigned long long)init_epc;
         print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
-    init_epc();
+    init_epc0();
     #endif
 
     #ifdef PRIORITY
@@ -98,7 +99,7 @@ void task_init(void)
         task[i]->thread.ra = (unsigned long long)init_epc;
         print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
     }
-    init_epc();
+    init_epc0();
     #endif
 }
 
@@ -245,6 +246,19 @@ static void init_epc()
          csrw sepc,0x0;\
          sret;"
          );
+}
+
+static void init_epc0()
+{
+    __asm__ __volatile__(
+        "csrr t0,sstatus;\
+         li t1,0x120;\
+         or t0,t0,t1;\
+         csrw sstatus,t0;\
+         csrw sepc,%0;\
+         sret;"
+        :
+        :"r"(dead_loop));
 }
 
 long getpid()

@@ -24,7 +24,7 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
 
     li t0, MTIME
     ld t0, 0(t0)
-    li t1, 100000000
+    li t1, 1000000
     add t0, t0, t1
     li t1, MTIMECMP
     sd t0, 0(t1)                #设置mtimecmp = mtime+1000000
@@ -61,8 +61,8 @@ virtual_next:
     sfence.vma zero, zero
 
     li t0,0x40122
-    csrw sstatus,t0                 #
-
+    csrw sstatus,t0                 
+    csrw scause,zero                #我们利用instruciton page fault来到这里,应该要把他置位回去
     la t0, exception_addr_s 
     csrw stvec, t0    #set s mode interupt handle place
 
