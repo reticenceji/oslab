@@ -226,6 +226,7 @@ void switch_to(struct task_struct* next)
     if (next==current) return;
     register struct task_struct *prev = current;
     current = next;
+    __switch_page(current->mm->satp);
     __switch_to(& current->thread,& prev->thread);
 }
 
