@@ -177,7 +177,13 @@ exception_retaddr_s:
 	POP x2
 	csrrw sp,sscratch,sp
 	sret
-		
+#第一个参数 a0 current.mm.satp
+.globl __switch_page
+.type __switch_page,@function
+
+__switch_page:
+	csrw satp, a0
+	ret	
 #第一个参数 a0 current
 #第二个参数 a1 prev
 .globl __switch_to
@@ -201,6 +207,7 @@ __switch_to:
 	sd s10,96(a1)
 	sd s11,104(a1)
 
+
 	ld t0,-16(a0)
 	csrw sscratch,t0
 	ld ra,0(a0)
@@ -217,6 +224,7 @@ __switch_to:
 	ld s9,88(a0)
 	ld s10,96(a0)
 	ld s11,104(a0)
+
     ret
 
 .globl __is_page_open
