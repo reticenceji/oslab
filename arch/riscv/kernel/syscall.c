@@ -1,7 +1,7 @@
 #include "put.h"
 #include "syscall.h"
 #include "sched.h"
-#define NR_OPEN 2//mostly open one case
+#define NR_OPEN 2//0 标准输入 1标准输出 2标准错误，这次只用1
 
 
 long sys_getpid()
@@ -18,7 +18,7 @@ long sys_write(unsigned int fd, const char* buf, size_t count)
     if(fd==1)
     {
         puts(buf);
-        return count-1;//dismiss '\n'
+        return count-1;//dismiss '\0'
     }
 
     
