@@ -66,9 +66,9 @@
 #define FLAG_W 0x4
 #define FLAG_X 0x8
 #define FLAG_U 0x10
-#define FLAG_G 0x11
-#define FLAG_A 0x12
-#define FLAG_D 0x14
+#define FLAG_G 0x20
+#define FLAG_A 0x40
+#define FLAG_D 0x80
 
 /* 页表模式SV39 */
 #define MODE_SV39 0x8000000000000000
