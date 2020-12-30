@@ -120,6 +120,7 @@ exception_retaddr_s:
 
 __switch_page:
 	csrw satp, a0
+	sfence.vma zero, zero
 	ret	
 #第一个参数 a0 current
 #第二个参数 a1 prev
