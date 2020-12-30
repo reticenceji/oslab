@@ -39,6 +39,7 @@ void task_init(void)
     current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
+    task[0]->mm = (struct mm_struct*)(MM_START_V);
     task[0]->mm->satp = KERNEL_SATP;
     task[0]->counter = 0;
     task[0]->priority = 5;
@@ -69,7 +70,7 @@ void task_init(void)
         task[i]->thread.sp = USER_TASK_SIZE;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
         task[i]->thread.ra = (unsigned long long)init_epc;
-        print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
+        //print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
     init_epc0();
     #endif
@@ -98,7 +99,7 @@ void task_init(void)
         task[i]->thread.sp = USER_TASK_SIZE;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;
         task[i]->thread.ra = (unsigned long long)init_epc;
-        print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
+        //print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
     }
     init_epc0();
     #endif
@@ -114,7 +115,7 @@ void do_timer(void)
     {
         schedule();
     }
-    print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
+    //print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     return ;
     #endif
 
@@ -157,7 +158,7 @@ void schedule(void)
             for (int j = 1; j <= LAB_TEST_NUM; j++)
             {
                 task[j]->counter = rand();      //重新赋值
-                print("[PID = %l] Reset counter = %l\n",task[j]->pid,task[j]->counter);
+                //print("[PID = %l] Reset counter = %l\n",task[j]->pid,task[j]->counter);
             }
         }
         else
@@ -179,7 +180,7 @@ void schedule(void)
 		    if(task[j] != 0 && task[j]->counter == 0)//&& current == task[j]
 		    {
 			    task[j]->counter = 7-(j-1)%4;//current->counter = 7-(j-1)%4
-                print("[PID = %l] Reset counter = %l\n", task[j]->pid, 7-(j-1)%4);
+                //print("[PID = %l] Reset counter = %l\n", task[j]->pid, 7-(j-1)%4);
 		    }
 	    }
     }
@@ -215,7 +216,7 @@ void schedule(void)
     for( int i=1; i < NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
     {
         task[i]->priority = rand();
-        print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
+        //print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
     }
     switch_to(task[next]);                      //切换到新任务
     #endif

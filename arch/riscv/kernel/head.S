@@ -11,7 +11,7 @@
 .equ MTIME, 0x200bff8
 .equ MTIMECMP, 0x2004000
 .equ MAP_OFFSET, 0xffffffe000000000-0x80000000  #与vm.h的MAP_OFFSET应该相同
-.equ SATP 0x8000000000081000        #与vm.h的KERNEL_SATP应该相同
+.equ SATP,0x8000000000081000        #与vm.h的KERNEL_SATP应该相同
 _start:
     la t0, _bss_start
     la t1, _bss_end             #后面那个符号是lds给出的
