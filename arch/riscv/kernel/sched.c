@@ -57,7 +57,7 @@ void task_init(void)
         task[i]->mm->satp = MODE_SV39 | pgtbl>>12;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P+(i-1)*USER_STACK_SIZE,
+        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
                         USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
         kernel_mapping((uint64*)pgtbl);
 
@@ -67,7 +67,7 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
 
-        task[i]->thread.sp = USER_TASK_SIZE;
+        task[i]->thread.sp = USER_STACK_BOTTOM_V;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
         task[i]->thread.ra = (unsigned long long)init_epc;
         //print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
@@ -86,7 +86,7 @@ void task_init(void)
         task[i]->mm->satp = MODE_SV39 | pgtbl>>12;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_TOP_P+(i-1)*USER_STACK_SIZE,
+        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
                         USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
         kernel_mapping((uint64*)pgtbl);
 
@@ -96,7 +96,7 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
 
-        task[i]->thread.sp = USER_TASK_SIZE;
+        task[i]->thread.sp = USER_STACK_BOTTOM_V;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;
         task[i]->thread.ra = (unsigned long long)init_epc;
         //print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);

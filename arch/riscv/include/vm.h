@@ -18,7 +18,7 @@
 
 #define UART_START_P 0x10000000
 #define UART_START_V 0xffffffdf90000000
-#define UART_SIZE 0x100
+#define UART_SIZE 0x1000
 
 /* 我们把kernel space分成两部分
  * 第一部分是已经预先分配好的内存，包括代码、堆栈、一些slab
@@ -56,10 +56,9 @@
 #define USER_TASK_SIZE (1 * PAGE_SIZE)
 // TODO 用户栈？为什么需要这个呢？
 #define USER_STACK_BOTTOM_V (0xffffffdf80000000)
-#define USER_STACK_BOTTOM_P (USER_STACK_BOTTOM_V + USER_TASK_START_P - USER_TASK_START_V)
+#define USER_STACK_BOTTOM_P (0x80000000)
 #define USER_STACK_SIZE     (1 * PAGE_SIZE)
 #define USER_STACK_TOP_V    (USER_STACK_BOTTOM_V - USER_STACK_SIZE)
-#define USER_STACK_TOP_P    (USER_STACK_TOP_V + USER_TASK_START_P - USER_TASK_START_V)
 
 /* 页表的权限位，用或连接 */
 #define FLAG_V 0x1
