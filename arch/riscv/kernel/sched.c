@@ -235,9 +235,6 @@ void switch_to(struct task_struct* next)
 /* 死循环 */
 void dead_loop(void)
 {
-    #ifdef SJF
-    print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
-    #endif
     while (1);
 }
 
