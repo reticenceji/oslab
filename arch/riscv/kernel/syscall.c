@@ -11,14 +11,18 @@ long sys_getpid()
 long sys_write(unsigned int fd, const char* buf, size_t count)
 {
 //sys_write(unsigned int fd, const char* buf, size_t count)
-    if(fd>=NR_OPEN||count<0)
+    if(fd>=NR_OPEN || !count)
         return -1; //wrong
-    if(!count)
+    if(count==1)
         return 0;
     if(fd==1)
     {
-        puts(buf);
-        return count-1;//dismiss '\0'
+        int cnt=0;
+        while(cnt<count-1)
+        {
+            print("%c",buf[cnt++]);
+        }
+           return cnt;
     }
 
     
