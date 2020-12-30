@@ -10,8 +10,8 @@
 .endm
 .equ MTIME, 0x200bff8
 .equ MTIMECMP, 0x2004000
-.equ MAP_OFFSET, 0xffffffe000000000-0x80000000
-
+.equ MAP_OFFSET, 0xffffffe000000000-0x80000000  #与vm.h的MAP_OFFSET应该相同
+.equ SATP 0x8000000000081000        #与vm.h的KERNEL_SATP应该相同
 _start:
     la t0, _bss_start
     la t1, _bss_end             #后面那个符号是lds给出的
@@ -50,12 +50,12 @@ done_clear_bss:                 #循环的将.bss段内容设置为0
 
 _start_retaddr:
     la t0, virtual_next
-    li t1,0xffffffe000000000-0x80000000  
+    li t1, MAP_OFFSET
     add t0,t0,t1
     csrw stvec, t0                  #设置supervisor mode异常处理地址
     call paging_init
 
-    li t0,0x8000000000081000
+    li t0,SATP
     csrw satp,t0
 virtual_next:
     sfence.vma zero, zero

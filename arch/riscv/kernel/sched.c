@@ -39,8 +39,7 @@ void task_init(void)
     current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
-    //TODO task[0]身为idle程序也要把当前的satp存下来
-    //task[0]->mm->satp = ;
+    task[0]->mm->satp = KERNEL_SATP;
     task[0]->counter = 0;
     task[0]->priority = 5;
     task[0]->blocked = 0;
