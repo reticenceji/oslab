@@ -1,8 +1,7 @@
-#ifndef SYSCALL_H
-#define SYSCALL_H
+#ifndef _SYSCALL_H
+#define _SYSCALL_H
 
-typedef unsigned long long size_t ;
-typedef unsigned long long uintptr_t ;
+#include "types.h"
 //系统调用号
 #define SYS_WRITE 64
 #define SYS_GETPID 172

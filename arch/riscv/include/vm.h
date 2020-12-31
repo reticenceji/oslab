@@ -1,10 +1,6 @@
 #ifndef _VM_H
 #define _VM_H
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 #include "sched.h"
 
 #define REG_SIZE (8)

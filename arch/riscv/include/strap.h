@@ -1,5 +1,5 @@
-#ifndef STRAP_H
-#define STRAP_H
+#ifndef _STRAP_H
+#define _STRAP_H
 
 //异常号
 #define EX_ECALL_FROM_U 8

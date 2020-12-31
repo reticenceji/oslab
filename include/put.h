@@ -1,16 +1,13 @@
-#ifndef PUT_H
-#define PUT_H
-#define UART16550A_DR (volatile unsigned char *)0xffffffdf90000000
+#ifndef _PUT_H
+#define _PUT_H
 
-typedef __builtin_va_list va_list;
-#define va_start(v,l)	__builtin_va_start(v,l)
-#define va_end(v)	__builtin_va_end(v)
-#define va_arg(v,l)	__builtin_va_arg(v,l)
-//支持变长数组
+#include "stddef.h"
+
 void puti(int num);
 int puts(const char *s);
 void print(const char *fmt, ...);
-
-#define putchar(c) (*(volatile unsigned char *)0xffffffdf90000000)=(unsigned char)(c)
+void putX(unsigned long long num);
+#define UART16550A_DR (volatile unsigned char *)0x10000000
+#define putchar(c) (*(volatile unsigned char *)0x10000000)=(unsigned char)(c)
 
 #endif
