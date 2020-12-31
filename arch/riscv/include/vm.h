@@ -54,9 +54,9 @@
 #define USER_TASK_START_P (0x84000000)
 #define USER_TASK_START_V (0x0)
 #define USER_TASK_SIZE (1 * PAGE_SIZE)
-// TODO 用户栈？为什么需要这个呢？
+// TODO 这个地方有个惊天大坑，物理地址的限制！
 #define USER_STACK_BOTTOM_V (0xffffffdf80000000)
-#define USER_STACK_BOTTOM_P (0x80000000)
+#define USER_STACK_BOTTOM_P (0x83000000)
 #define USER_STACK_SIZE     (1 * PAGE_SIZE)
 #define USER_STACK_TOP_V    (USER_STACK_BOTTOM_V - USER_STACK_SIZE)
 
