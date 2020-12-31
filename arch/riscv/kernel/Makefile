@@ -1,5 +1,5 @@
 VPATH = ../../../lib
-all: head.o entry.o strap.o sched.o vm.o handler.o
+all: head.o entry.o strap.o sched.o vm.o 
 .PHONY: all
 
 head.o: head.S entry.o vm.o
@@ -8,7 +8,7 @@ head.o: head.S entry.o vm.o
 entry.o: entry.S strap.o
 	$(GCC) $(CFLAG) -c entry.S -o $@ 
 
-strap.o: strap.c 
+strap.o: strap.c syscall.o
 	$(GCC) $(CFLAG) -c strap.c -o $@
 
 sched.o: sched.c rand.o vm.o
@@ -20,5 +20,3 @@ vm.o: vm.c
 syscall.o: syscall.c
 	$(GCC) $(CFLAG) -c syscall.c -o $@
 
-handler.o: handler.c syscall.o
-	$(GCC) $(CFLAG) -c handler.c -o $@
