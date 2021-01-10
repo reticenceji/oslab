@@ -12,10 +12,11 @@
 extern uint64 _start ;
 extern uint64 _end;
 static struct buddy buddy_system;
+static int bitmap[(KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/ PAGE_SIZE];
 static inline fixsize(int size);
 
 /* 把size对齐到2^n */
-static inline fixsize(int size)
+static inline int fixsize(int size)
 {
     int fix_size=1;
     size--;
@@ -51,12 +52,12 @@ static void init_bitmap(int index,int size)
 void init_buddy_system(void)
 {   
     buddy_system.size = (KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/ PAGE_SIZE; 
+    buddy_system.bitmap = bitmap;
     init_bitmap(0,buddy_system.size);
 
     alloc_pages((uint64)&_end-(uint64)&_start);
 }
 
-// TODO
 void * alloc_pages(int size) {
     unsigned index = 0;
     unsigned node_size;
@@ -65,7 +66,7 @@ void * alloc_pages(int size) {
     size = fixsize(size);
     /* 如果小于的话说明空间不够了 */
     if (buddy_system.bitmap[index] < size)
-        return -1;
+        return NULL;
 
     /* 在bitmap里寻找合适的index */
     for(node_size = buddy_system.size; node_size != size; node_size /= 2) {
@@ -87,10 +88,8 @@ void * alloc_pages(int size) {
     return va;
 }
 
-// TODO
-void free_pages(void*);
-
-void buddy2_free(int va) {
+void free_pages(void*)
+{
     unsigned node_size, index;
     unsigned left_node, right_node;
     
