@@ -16,7 +16,7 @@ unsigned long cache_tid = 0;
 struct kmem_cache* slub_allocator[NR_PARTIAL] = {};
 void *page_base;
 
-const size_t kmem_cache_objsize[] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048};
+const size_t kmem_cache_objsize[] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048};//used to provide these size of allocator
 const char *kmem_cache_name[] = {"slub-objectsize-8   ", "slub-objectsize-16  ", "slub-objectsize-32  ", "slub-objectsize-64  ", "slub-objectsize-128 ", 
 								"slub-objectsize-256 ", "slub-objectsize-512 ", "slub-objectsize-1024", "slub-objectsize-2048"};
 
@@ -31,13 +31,13 @@ const char *kmem_cache_name[] = {"slub-objectsize-8   ", "slub-objectsize-16  ",
 #define PAGE_TO_ADDR(page_addr) \
 			((void *)((((page_addr - page_base) / STRUCT_PAGE_SIZE) << PAGE_SHIFT) + VM_START))
 
-void set_page_attr(void *addr, int nr, int attr)
+void set_page_attr(void *addr, int nr, int attr)//create nr pages on addr and make flag at attr
 {
 	struct page *page,*npage;
 	if(addr == NULL) 
 		return;
 	
-	npage = ADDR_TO_PAGE(addr);
+	npage = ADDR_TO_PAGE(addr);//return addr from virtual address
 	page = npage;
 	
 	for(int i = 0; i < nr - 1; i++){
@@ -55,7 +55,7 @@ void set_page_attr(void *addr, int nr, int attr)
 	return;
 }
 
-void clear_page_attr(struct page *p)
+void clear_page_attr(struct page *p)//clear link of pages
 {
 	struct page *t;
 	if(p->flags == PAGE_FREE) 
@@ -114,10 +114,6 @@ void page_init()
 void slub_structure_init()
 {
 	void *structure_free_list = alloc_pages(STRUCTURE_SIZE);
-
-	if(structure_free_list == NULL)
-		while(1);
-
 	set_page_attr(structure_free_list, STRUCTURE_SIZE, PAGE_RESEARVE);
 
 	cache_region.base = structure_free_list;
@@ -132,7 +128,7 @@ struct kmem_cache *alloc_slub_structure()
 	struct kmem_cache *p;
 
 	if(cache_region.freelist == NULL)
-		return NULL; 
+		return NULL;
 		
 	p = (struct kmem_cache *)(cache_region.freelist);
 	cache_region.freelist = *(void **)(cache_region.freelist);
@@ -175,11 +171,6 @@ void *cache_alloc_pages(struct kmem_cache *cache)
 {
 	void *p;
 	void *tp;
-	struct page *page;
-
-	p = alloc_pages(cache->nr_page_per_slub);
-	if(p == NULL)
-		return NULL;
 
 	memset(p, 0, (cache->nr_page_per_slub) << PAGE_SHIFT);	
 	set_page_attr(p, cache->nr_page_per_slub, PAGE_SLUB);
@@ -202,8 +193,6 @@ static void inline free_slub_structure(struct kmem_cache *cache)
 		*((void **)cache) = *(void **)(cache_region.freelist);
 		*(void **)(cache_region.freelist) = (void *)cache;
 	}
-
-	return;
 }
 
 void slub_init()
