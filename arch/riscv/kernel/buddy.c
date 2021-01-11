@@ -38,7 +38,6 @@ static inline int fixsize(int size)
 //     else 
 //         return -1;
 // }
-
 static void init_bitmap(int index,int size)
 {
     buddy_system.bitmap[index] = size;
