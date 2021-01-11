@@ -51,6 +51,23 @@ struct thread_struct
     unsigned long long s11;
 };
 /* 进程内存管理结构 */
+
+typedef struct { unsigned long pgprot; } pgprot_t;
+struct vm_area_struct {
+    /* Our start address within vm_area. */
+    unsigned long vm_start;		
+    /* The first byte after our end address within vm_area. */
+    unsigned long vm_end;		
+    /* linked list of VM areas per task, sorted by address. */
+    struct vm_area_struct *vm_next, *vm_prev;
+    /* The address space we belong to. */
+    struct mm_struct *vm_mm;	
+    /* Access permissions of this VMA. */
+    pgprot_t vm_page_prot;
+    /* Flags*/
+    unsigned long vm_flags;		
+};
+
 struct mm_struct 
 {
     unsigned long long satp;
