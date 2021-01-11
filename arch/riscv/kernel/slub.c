@@ -334,17 +334,18 @@ void kfree(const void *addr)
 
     // 获得地址所在页的属性
     // YOUR CODE HERE
-
+	page=ADDR_TO_PAGE(addr);
 
     // 判断当前页面属性
     if(page->flags == PAGE_BUDDY){
         // YOUR CODE HERE
-
+		free_pages(page);
 
         clear_page_attr(ADDR_TO_PAGE(addr)->header);
 
     } else if(page->flags == PAGE_SLUB){
         // YOUR CODE HERE
+		kmem_cache_free(addr);
     }
 
     return;
