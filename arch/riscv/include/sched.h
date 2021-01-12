@@ -83,6 +83,7 @@ struct vm_area_struct {
     /* Flags */
     unsigned long vm_flags;		
 };
+#define VMA_SIZE 64
 
 struct mm_struct 
 {
