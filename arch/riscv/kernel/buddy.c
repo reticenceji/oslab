@@ -14,6 +14,7 @@ extern uint64 _end;
 static struct buddy buddy_system;
 static int bitmap[(KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/ PAGE_SIZE];
 static inline fixsize(int size);
+static void init_bitmap(int index,int size);
 
 /* 把size对齐到2^n */
 static inline int fixsize(int size)
@@ -27,17 +28,6 @@ static inline int fixsize(int size)
     }
 }
 
-// static int find_index(int index,int num)
-// {
-//     if (buddy_system.bitmap[index]>=num)
-//     {
-//         if (buddy_system.bitmap[2*index+1]>=num) return find_index(2*index+1,num);
-//         if (buddy_system.bitmap[2*index+2]>=num) return find_index(2*index+1,num);
-//         return index;
-//     }   
-//     else 
-//         return -1;
-// }
 static void init_bitmap(int index,int size)
 {
     buddy_system.bitmap[index] = size;
@@ -87,14 +77,14 @@ void * alloc_pages(int size) {
     return va;
 }
 
-void free_pages(void*)
+void free_pages(void* va)
 {
     unsigned node_size, index;
     unsigned left_node, right_node;
     
     node_size = 1;
     //找到被标记为0的那个节点
-    for (index = VA2OFFSET(va) + buddy_system.size - 1; buddy_system.bitmap[index] ; index = PARENT(index)) 
+    for (index = VA2OFFSET((uint64)va) + buddy_system.size - 1; buddy_system.bitmap[index] ; index = PARENT(index)) 
     {
         node_size *= 2;
         if (index == 0) return;

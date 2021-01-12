@@ -17,6 +17,19 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
         case SYS_WRITE:
             ret0 = sys_write(regs[REG_A0],(const char*)regs[REG_A1],regs[REG_A2]);
             break;
+        case SYS_MUNMAP:
+            ret0 = munmap ((void *) regs[REG_A0], (size_t) REG_A1);
+            break;
+        case SYS_FORK:
+            ret0 = fork();
+            break;
+        case SYS_MMAP:
+            ret0 = mmap ((void *)regs[REG_A0], (size_t)regs[REG_A1], (int) regs[REG_A2],
+                   (int)regs[REG_A3], (int)regs[REG_A4] , (__off_t) regs[REG_A5]);
+            break;
+        case SYS_MPROTECT:
+            ret0 = mprotect ((void *) regs[REG_A0], (size_t) regs[REG_A1], (int) regs[REG_A2]);
+            break;
         default:
             break;
         }
