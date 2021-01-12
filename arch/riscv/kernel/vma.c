@@ -27,17 +27,6 @@ struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t lengt
     return new_node;
 }
 
-struct vm_area_struct *vma_find(uint64 va)
-{
-    struct vm_area_struct *ptr = current->mm->mmap;
-    while (ptr!=NULL)
-    {
-        if (ptr->vm_start <= va && va < ptr->vm_end)
-            return ptr;
-        ptr = ptr->vm_next;
-    }
-    return ptr;
-}
 
 int vma_insert(struct mm_struct *mm, void *start, size_t length, int prot)
 {
