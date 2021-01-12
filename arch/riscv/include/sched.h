@@ -32,6 +32,22 @@ extern struct task_struct *current;
 /* 进程指针数组 */
 extern struct task_struct * task[NR_TASKS];
 
+/* 下面这些在Linux中放在mm.h中，line250
+ * vm_flags in vm_area_struct, see mm_types.h.
+ * When changing, update also include/trace/events/mmflags.h
+ */
+#define VM_NONE		0x00000000
+#define VM_READ		0x00000001	/* currently active flags */
+#define VM_WRITE	0x00000002
+#define VM_EXEC		0x00000004
+#define VM_SHARED	0x00000008
+
+/* mprotect() hardcodes VM_MAYREAD >> 4 == VM_READ, and so for r/w/x bits. */
+#define VM_MAYREAD	0x00000010	/* limits for mprotect() etc */
+#define VM_MAYWRITE	0x00000020
+#define VM_MAYEXEC	0x00000040
+#define VM_MAYSHARE	0x00000080
+
 /* 进程状态段数据结构 */
 struct thread_struct
 {
@@ -64,12 +80,8 @@ struct vm_area_struct {
     struct mm_struct *vm_mm;	
     /* Access permissions of this VMA. */
     pgprot_t vm_page_prot;
-    /* Flags*/
+    /* Flags */
     unsigned long vm_flags;		
-    /* next vma */
-    struct vm_area_struct *next;
-    /* prev vma */
-    struct vm_area_struct *prev;
 };
 
 struct mm_struct 
@@ -80,14 +92,12 @@ struct mm_struct
 /* 进程数据结构 */
 struct task_struct
 {
-     long state;    // 进程状态 Lab3中进程初始化时置为TASK_RUNNING
-     long counter;  // 运行剩余时间 
-     long priority; // 运行优先级 1最高 5最低
-     long blocked;
-     long pid;      // 进程标识符
+    long state;    // 进程状态 Lab3中进程初始化时置为TASK_RUNNING
+    long counter;  // 运行剩余时间 
+    long priority; // 运行优先级 1最高 5最低
+    long blocked;
+    long pid;      // 进程标识符
     // Above Size Cost: 40 bytes
-
-    //TODO add sepc, sscratch, mm_struct *mm etc. here
     unsigned long long sepc;
     unsigned long long sscratch;
     struct mm_struct *mm;
