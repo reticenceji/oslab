@@ -66,11 +66,16 @@ struct vm_area_struct {
     pgprot_t vm_page_prot;
     /* Flags*/
     unsigned long vm_flags;		
+    /* next vma */
+    struct vm_area_struct *next;
+    /* prev vma */
+    struct vm_area_struct *prev;
 };
 
 struct mm_struct 
 {
     unsigned long long satp;
+    struct vm_area_struct *mmap;    //参照Linux实际实现命名
 };
 /* 进程数据结构 */
 struct task_struct
