@@ -1,0 +1,32 @@
+#include "sched.h"
+#include "types.h"
+extern void ret_from_fork(uint64 *stack);
+/* TODO 为子进程创建它的task_struct(包括Stack的整个Page，并修改部分内容。如果创建失败（NR_TASK）返回NULL，否则返回它的地址 
+ * ra = fork_ret
+ * pid = new pid
+ * sp = new sp
+ * CSR satp
+ * /
+struct task_struct* dup_task_struct ()
+{
+
+}
+
+/* TODO 对于父进程，返回子进程的PID；对于子进程，返回0 */
+pid_t fork()
+{
+    struct task_struct *child_ts;
+    child_ts =  dup_task_struct();
+    /* 复制用户空间的内容
+     * 代码段、数据段不用，写死在0x84000000，不管他。
+     * 堆栈需要另外开一段，并且复制parent堆栈的内容。并且我们需要保存他在task——struct的某个地方。
+     * 创建页表
+     */
+    return child_ts->pid;
+}
+
+/* TODO 主要功能是调用汇编的ret_from_fork */
+fork_ret()
+{
+
+}
