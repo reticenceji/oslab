@@ -21,50 +21,22 @@ static int test_range(uint64 start,uint64 end,struct vm_area_struct *vma)
 /* 修改从start到end的映射，前提是虚拟地址已经连续映射*/
 static inline void edit_vma(uint64 start,uint64 end,int protection)
 {
-    struct vm_area_struct *vma,*ins_vma;
+    struct vm_area_struct *vma;
     uint64 tmp_end;
     vma = vma_find(start);
     if (vma->vm_start != start) 
-    {
-        ins_vma = (struct vm_area_struct *)kmolloc(sizeof(struct vm_area_struct));
-        ins_vma->vm_start = vm->start;
-        ins_vma->vm_end = start;
-        ins_vma->flags = vma->vm_flags;
-        ins_vma->vm_page_prot = vma->vm_page_prot;
-        ins_vma->mm_struct = current->mm;
-        ins_vma->vm_next = NULL;
-        ins_vma->vm_prev = NULL;
-        insert(ins_vma);
-    }
+        vma_insert(current->mm,vm->start,start - vm->start+1, protection);
     while (1)
     {
         tmp_end = vma->vm_end;
         if (tmp_end>=end) break;
-        delete(vma);
+        vma_delete(tmp_end-1);
         vma=vma_find(tmp_end);
     }
-    ins_vma = (struct vm_area_struct *)kmolloc(sizeof(struct vm_area_struct));
-    ins_vma->vm_start = start;
-    ins_vma->vm_end = end;
-    ins_vma->flags = protection;
-    ins_vma->vm_page_prot = FLAG2PAGE_PROT(protection);
-    ins_vma->mm_struct = current->mm;
-    ins_vma->vm_next = NULL;
-    ins_vma->vm_prev = NULL;
-    insert(ins_vma);
+    vma_insert(current->mm,start,end,protection);
 
     if (vma->vm_end != tmp_end)
-    {
-        ins_vma = (struct vm_area_struct *)kmolloc(sizeof(struct vm_area_struct));
-        ins_vma->vm_start = end;
-        ins_vma->vm_end = vma->vm_end;
-        ins_vma->flags = vma->vm_flags;
-        ins_vma->vm_page_prot = vma->vm_page_prot;
-        ins_vma->mm_struct = current->mm;
-        ins_vma->vm_next = NULL;
-        ins_vma->vm_prev = NULL;
-        insert(ins_vma);
-    }
+        vma_insert(current->mm,end,vma->vm_end,protection);
 }
 
 /* 从va_start到va_end的每一个页表项都执行func的操作 */
