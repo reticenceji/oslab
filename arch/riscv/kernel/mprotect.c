@@ -48,9 +48,9 @@ static inline void edit_page_table(uint64 va_start,uint64 va_end, int protection
     for (va = va_start;va<va_end;va+=PAGE_SIZE)
     {
         index = (va>>30) & 0x1FF;
-        base = VP(*(base[index]>>10);    //二级页表base
+        base = VP(base[index]>>10);    //二级页表base
         index = (va>>21) & 0x1FF;
-        base = VP(*(base[index]>>10);    //三级页表base
+        base = VP(base[index]>>10);    //三级页表base
         index = (va>>12) & 0x1FF;               
         base[index] = base[index] & 0xE | protection ;  //重新修改权限位
     }

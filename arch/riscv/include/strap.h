@@ -16,6 +16,8 @@
 #define REG_A6 19
 #define REG_A7 18
 #define CSR_SEPC 0
+#define CSR_STVAL 1
+#define CSR_SCAUSE 2
 
 extern void do_timer();
 #endif

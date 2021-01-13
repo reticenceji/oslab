@@ -83,7 +83,7 @@ void free_pages(void* va)
     unsigned left_node, right_node;
     
     node_size = 1;
-    //找到被标记为0的那个节点
+    //初始的index是最下面一层，我要回溯到被标记为0的节点
     for (index = VA2OFFSET((uint64)va) + buddy_system.size - 1; buddy_system.bitmap[index] ; index = PARENT(index)) 
     {
         node_size *= 2;
