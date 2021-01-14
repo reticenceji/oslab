@@ -5,6 +5,7 @@
 #define INF 1e9
 struct task_struct *current;
 struct task_struct *task[NR_TASKS];
+static uint64 pid_bitmap;
 static void init_epc();
 static void init_epc0();
 
@@ -45,6 +46,7 @@ void task_init(void)
     task[0]->priority = 5;
     task[0]->blocked = 0;
     task[0]->pid = 0;
+    pid_bitmap |= 0x1<<task[0]->pid;
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
@@ -66,6 +68,7 @@ void task_init(void)
         task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
+        pid_bitmap |= 0x1<<task[i]->pid;
 
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
@@ -95,6 +98,7 @@ void task_init(void)
         task[i]->priority = 5;
         task[i]->blocked = 0;
         task[i]->pid = i;
+        pid_bitmap |= 0x1<<task[i]->pid;
 
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;
@@ -261,7 +265,23 @@ static void init_epc0()
         :"r"(dead_loop));
 }
 
-long getpid()
+/* 返回当前进程的PID */
+pid_t getpid()
 {
     return current->pid;
+}
+
+/* 利用pid_bitmap产生一个没有被使用过的pid 
+ * 没有考虑超过64的情况
+ * */
+pid_t newpid()
+{
+    int mask = 1;
+    pid_t pid = 0;
+    while (pid_bitmap & mask) 
+    {
+        mask <<= 1;
+        pid++;
+    }
+    return pid;
 }

@@ -4,11 +4,7 @@
 
 extern void ret_from_fork(uint64 *stack);
 /* TODO 为子进程创建它的task_struct(包括Stack的整个Page，并修改部分内容。如果创建失败（NR_TASK）返回NULL，否则返回它的地址 
- * ra = fork_ret
- * pid = new pid
- * sp = new sp
- * CSR satp
- * stack ?
+ * stack内容
  */
 struct task_struct* dup_task_struct (struct task_struct *current)
 {

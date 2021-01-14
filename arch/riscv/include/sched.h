@@ -22,8 +22,8 @@
 #define PREEMPT_ENABLE  0
 #define PREEMPT_DISABLE 1
 
-/* Lab3中进程的数量以及每个进程初始的时间片 */
-#define LAB_TEST_NUM        4 
+/* Lab6中进程的数量以及每个进程初始的时间片 */
+#define LAB_TEST_NUM        1 
 #define LAB_TEST_COUNTER    5  
 
 /* 当前进程 */
@@ -103,6 +103,7 @@ struct task_struct
     unsigned long long sscratch;
     struct mm_struct *mm;
     struct thread_struct thread; // 该进程状态段
+    uint64 *stack;  //保存异常发生时的寄存器状态
 };
 
 /* 进程初始化 创建四个dead_loop进程 */ 
@@ -124,6 +125,9 @@ void dead_loop(void);
 
 /* 获取当前进程pid */
 long getpid(void);
+
+/* 获得一个没有被使用过的pid */
+long newpid(void);
 
 #endif
 
