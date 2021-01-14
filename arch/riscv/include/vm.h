@@ -65,6 +65,7 @@
 #define FLAG_G 0x20
 #define FLAG_A 0x40
 #define FLAG_D 0x80
+#define PAGE_MASK (0x3FF)
 
 /* 页表模式SV39 */
 #define MODE_SV39 0x8000000000000000

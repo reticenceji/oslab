@@ -1,6 +1,6 @@
 #include "sched.h"
 #include "types.h"
-extern struct task_struct *current;
+#include "vma.h"
 
 struct vm_area_struct *vma_find(uint64 va)
 {
@@ -9,7 +9,7 @@ struct vm_area_struct *vma_find(uint64 va)
     {
         if (ptr->vm_start <= va && va<ptr->vm_end)
             return ptr;
-        ptr = ptr->next;
+        ptr = ptr->vm_next;
     }
     return ptr;
 }
@@ -138,4 +138,27 @@ int vma_split(uint64 va)
         return 0;
     }
     return -1;
+}
+
+int vma_contiguous(uint64 from_v, uint64 to_v)
+{
+    struct vm_area_struct *ptr_from = vma_find(from_v);
+    struct vm_area_struct *ptr_to = vma_find(to_v);
+    if (ptr_from == NULL || ptr_to == NULL)
+    {
+        return -1;
+    }
+    if (ptr_from == ptr_to)
+    {
+        return 0;
+    }
+    while (ptr_from != ptr_to)
+    {
+        if (ptr_from->vm_next->vm_start != ptr_from->vm_end)
+        {
+            return -1;
+        }
+        ptr_from = ptr_from->vm_next;
+    }
+    return 0;
 }
