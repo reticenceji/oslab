@@ -176,13 +176,13 @@ __is_page_open:
 .globl ret_from_fork
 .type ret_from_fork,@function
 ret_from_fork:
-	ld t0,a0(0)
+	ld t0,0x0(a0)
 	csrw sepc,t0
-	ld t0,a0(8)
+	ld t0,0x8(a0)
 	csrw stval,t0
-	ld t0,a0(0x10)
+	ld t0,0x10(a0)
 	csrw scause,t0
-	ld t0,a0(0x18)
+	ld t0,0x18(a0)
 	csrw sstatus,t0
 	ld x31,0x20(a0)
 	ld x30,0x28(a0)

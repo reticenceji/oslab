@@ -25,7 +25,7 @@ static inline void edit_vma(uint64 start,uint64 end,int protection)
     uint64 tmp_end;
     vma = vma_find(start);
     if (vma->vm_start != start) 
-        vma_insert(current->mm,vm->start,start - vm->start+1, protection);
+        vma_insert(current->mm, vma->vm_start, start - vma->vm_start, protection);
     while (1)
     {
         tmp_end = vma->vm_end;
@@ -33,10 +33,10 @@ static inline void edit_vma(uint64 start,uint64 end,int protection)
         vma_delete(tmp_end-1);
         vma=vma_find(tmp_end);
     }
-    vma_insert(current->mm,start,end,protection);
+    vma_insert(current->mm, start, end-start, protection);
 
     if (vma->vm_end != tmp_end)
-        vma_insert(current->mm,end,vma->vm_end,protection);
+        vma_insert(current->mm, end, vma->vm_end-end,protection);
 }
 
 /* 从va_start到va_end的每一个页表项都执行func的操作 */

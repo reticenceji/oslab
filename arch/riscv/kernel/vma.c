@@ -27,6 +27,33 @@ struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t lengt
     return new_node;
 }
 
+struct vm_area_struct *vma_copy(struct mm_struct *mm)
+{
+    if (mm->mmap == NULL)
+    {
+        return NULL;
+    }
+    struct vm_area_struct *mmap = current->mm->mmap;
+    struct vm_area_struct *new_mmap = NULL;
+    struct vm_area_struct *ptr_move = NULL;
+    while (mmap)
+    {
+        if (new_mmap == NULL)
+        {
+            new_mmap = vma_build(mm, mmap->vm_start, mmap->vm_end-mmap->vm_start, mmap->vm_flags);
+            ptr_move = new_mmap;
+        }
+        else
+        {
+            ptr_move->vm_next = vma_build(mm, mmap->vm_start, mmap->vm_end-mmap->vm_start, mmap->vm_flags);
+            ptr_move->vm_next->vm_prev = ptr_move;
+            mmap = mmap->vm_next;
+        }
+        mmap = mmap->vm_next;
+    }
+    return new_mmap;
+}
+
 
 int vma_insert(struct mm_struct *mm, void *start, size_t length, int prot)
 {
