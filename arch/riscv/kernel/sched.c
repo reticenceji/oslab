@@ -47,6 +47,7 @@ void task_init(void)
     task[0]->blocked = 0;
     task[0]->pid = 0;
     pid_bitmap |= 0x1<<task[0]->pid;
+    task[0]->stack = kmolloc(PT_REGS_SIZE);     //按照要求加的
     task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
     #ifdef SJF
     for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
@@ -69,7 +70,7 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
         pid_bitmap |= 0x1<<task[i]->pid;
-
+        task[i]->stack = kmolloc(PT_REGS_SIZE);     //按照要求加的
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
         task[i]->thread.ra = (unsigned long long)init_epc;
@@ -99,7 +100,7 @@ void task_init(void)
         task[i]->blocked = 0;
         task[i]->pid = i;
         pid_bitmap |= 0x1<<task[i]->pid;
-
+        task[i]->stack = kmolloc(PT_REGS_SIZE);     //按照要求加的
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
         task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;
         task[i]->thread.ra = (unsigned long long)init_epc;

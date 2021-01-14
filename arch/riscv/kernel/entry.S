@@ -14,7 +14,7 @@
 exception_addr_s:
 	# TODO 我打算重构这里，这样PUSH效率好像有点低，不过问题倒也不大
 	csrrw sp,sscratch,sp	#sscratch存的是kernel stack的地址，和Linux的实现方式有一定区别
-	PUSH x2			 		# 将原来的sp压栈
+	PUSH x2			 		
 	PUSH x1			
     PUSH x3
 	PUSH x4
@@ -171,3 +171,143 @@ __is_page_open:
 	csrr a0,satp
 	srli a0,a0,60 
 	ret
+
+#第一个参数 a0 stack
+.globl ret_from_fork
+.type ret_from_fork,@function
+ret_from_fork:
+	ld t0,a0(0)
+	csrw sepc,t0
+	ld t0,a0(8)
+	csrw stval,t0
+	ld t0,a0(0x10)
+	csrw scause,t0
+	ld t0,a0(0x18)
+	csrw sstatus,t0
+	ld x31,0x20(a0)
+	ld x30,0x28(a0)
+	ld x29,0x30(a0)
+	ld x28,0x38(a0)
+	ld x27,0x40(a0)
+	ld x26,0x48(a0)
+	ld x25,0x50(a0)
+	ld x24,0x58(a0)
+	ld x23,0x60(a0)
+	ld x22,0x68(a0)
+	ld x21,0x70(a0)
+	ld x20,0x78(a0)
+	ld x19,0x80(a0)
+	ld x18,0x88(a0)
+	ld x17,0x90(a0)
+	ld x16,0x98(a0)
+	ld x15,0xa0(a0)
+	ld x14,0xa8(a0)
+	ld x13,0xb0(a0)
+	ld x12,0xb8(a0)
+	ld x11,0xc0(a0)
+	ld x10,0xc8(a0)
+	ld x9,0xd0(a0)
+	ld x8,0xd8(a0)
+	ld x7,0xe0(a0)
+	ld x6,0xe8(a0)
+	ld x5,0xf0(a0)
+	ld x4,0xf8(a0)
+	ld x3,0x100(a0)
+	ld x2,0x108(a0)
+	ld x1,0x110(a0)
+
+	csrrw sp,sscratch,sp
+	mv a0,zero		#对于子进程fork返回0
+	sret
+
+/* 如果debug成功了，试试把原来的push改成 
+	.equ PT_REG_LEN,-0x110
+	csrrw sp,sscratch,sp
+	sd sp,0x10(sp)
+	add sp,sp,-0x118
+	sd x2,0x110(sp)
+	sd x3,0x100(sp)
+	sd x4,0xf8(sp)
+	sd x5,0xf0(sp)
+	sd x6,0xe8(sp)
+	sd x7,0xe0(sp)
+	sd x8,0xd8(sp)
+	sd x9,0xd0(sp)
+	sd x10,0xc8(sp)
+	sd x11,0xc0(sp)
+	sd x12,0xb8(sp)
+	sd x13,0xb0(sp)
+	sd x14,0xa8(sp)
+	sd x15,0xa0(sp)
+	sd x16,0x98(sp)
+	sd x17,0x90(sp)
+	sd x18,0x88(sp)
+	sd x19,0x80(sp)
+	sd x20,0x78(sp)
+	sd x21,0x70(sp)
+	sd x22,0x68(sp)
+	sd x23,0x60(sp)
+	sd x24,0x58(sp)
+	sd x25,0x50(sp)
+	sd x26,0x48(sp)
+	sd x27,0x40(sp)
+	sd x28,0x38(sp)
+	sd x29,0x30(sp)
+	sd x30,0x28(sp)
+	sd x31,0x20(sp)
+	csrr t0,sstatus
+	sd t0,0x18(sp)
+	csrr t0,scause
+	sd t0,0x10(s0)
+	csrr t0,stval
+	sd t0,0x8(sp)
+	csrr t0,sscratch
+	sd t0,0(sp)
+
+
+
+pop改成
+
+	ld t0,0(sp)
+	csrw sepc,t0
+	ld t0,8(sp)
+	csrw stval,t0
+	ld t0,0x10(sp)
+	csrw scause,t0
+	ld t0,0x18(sp)
+	csrw sstatus,t0
+	ld x31,0x20(sp)
+	ld x30,0x28(sp)
+	ld x29,0x30(sp)
+	ld x28,0x38(sp)
+	ld x27,0x40(sp)
+	ld x26,0x48(sp)
+	ld x25,0x50(sp)
+	ld x24,0x58(sp)
+	ld x23,0x60(sp)
+	ld x22,0x68(sp)
+	ld x21,0x70(sp)
+	ld x20,0x78(sp)
+	ld x19,0x80(sp)
+	ld x18,0x88(sp)
+	ld x17,0x90(sp)
+	ld x16,0x98(sp)
+	ld x15,0xa0(sp)
+	ld x14,0xa8(sp)
+	ld x13,0xb0(sp)
+	ld x12,0xb8(sp)
+	ld x11,0xc0(sp)
+	ld x10,0xc8(sp)
+	ld x9,0xd0(sp)
+	ld x8,0xd8(sp)
+	ld x7,0xe0(sp)
+	ld x6,0xe8(sp)
+	ld x5,0xf0(sp)
+	ld x4,0xf8(sp)
+	ld x3,0x100(sp)
+	ld x1,0x110(sp)
+	add sp,sp,0x118
+	ld x2,-0x10(sp)
+	csrrw sp,sscratch,sp
+	sret
+*/

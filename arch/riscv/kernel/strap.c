@@ -36,14 +36,10 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
         regs[REG_A0] = ret0;    //返回值通过a0传递
         break;
     case EX_INSTRUCTION_PF:
-        print("instruction page fault at %X\n",sepc);
-        while (1);
-        break;
     case EX_LOAD_PF:
-        print("store page fault at %X\n",sepc);
-        break;
     case EX_STORE_PF:
-        print("store page fault at %X\n",sepc);
+        memcopy(current->stack,regs,PT_REGS_SIZE);
+        do_page_fault(regs);
         break;
     default:
         break;

@@ -48,6 +48,7 @@ extern struct task_struct * task[NR_TASKS];
 #define VM_MAYEXEC	0x00000040
 #define VM_MAYSHARE	0x00000080
 
+#define PT_REGS_SIZE 0x118
 /* 进程状态段数据结构 */
 struct thread_struct
 {
