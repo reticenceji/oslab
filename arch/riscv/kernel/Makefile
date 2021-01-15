@@ -20,3 +20,11 @@ vm.o: vm.c
 syscall.o: syscall.c
 	$(GCC) $(CFLAG) -c syscall.c -o $@
 
+slub.o: slub.c buddy.o
+	$(GCC) $(CFLAG) -c slub.c -o $@
+
+buddy.o: buddy.c 
+	$(GCC) $(CFLAG) -c slub.c -o $@
+
+mm.o: mm.c slub.o
+	$(GCC) $(CFLAG) -c mm.c -o $@
