@@ -53,12 +53,14 @@ unsigned long get_unmapped_area(size_t length)
 void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
 {
     unsigned long *addr_suggest;
+    unsigned long start1;
+    start1=(unsigned)start;
     struct vm_area_struct *pointer_to_vma=mm->mmap;
     struct vm_area_struct *newvma;
     int flag=0;
     for(;pointer_to_vma;pointer_to_vma=pointer_to_vma->vm_next)
     {
-        if((start<=pointer_to_vma->vm_end && start>=pointer_to_vma->vm_start) || (start+length<=pointer_to_vma->vm_end && start+length>=pointer_to_vma->vm_start))
+        if((start1<=pointer_to_vma->vm_end && start1>=pointer_to_vma->vm_start) || (start1+length<=pointer_to_vma->vm_end && start1+length>=pointer_to_vma->vm_start))
             flag=1;
     }
     if(flag)
