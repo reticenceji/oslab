@@ -11,7 +11,7 @@
 extern uint64 _start ;
 extern uint64 _end;
 static struct buddy buddy_system;
-static int bitmap[(KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/ PAGE_SIZE];
+static int bitmap[(KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/PAGE_SIZE*2];
 static inline fixsize(int size);
 static void init_bitmap(int index,int size);
 

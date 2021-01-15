@@ -13,30 +13,6 @@ static void init_epc0();
 /* 进程初始化 创建四个dead_loop进程 */ 
 void task_init(void)
 {
-    // print("%X\n",task_init);
-    #ifdef DEBUGSTORETEXT
-        int *x=(int *)task_init;
-        *x = 1;
-    #endif
-    #ifdef DEBUGSTORERODATA
-        int *x=(int *)"\x97\x32\x00\x00";
-        *x = 1;
-    #endif
-    #ifdef DEBUGEXERODATA
-    int (*x) (int)=(int (*)(int))"\x97\x32\x00\x00";
-    int a=(*x)(5);
-    #endif
-    #ifdef DEBUGEXESTACK
-    char ins[] = "\x97\x32\x00\x00";
-    int (*x) (int)=(int (*)(int))ins;
-    int a=(*x)(5);
-    #endif
-    #ifdef DEBUGEXEDATA
-    static char ins[] = "\x97\x32\x00\x00";
-    int (*x) (int)=(int (*)(int))ins;
-    int a=(*x)(5);
-    #endif
-
     print("task init...\n");
     current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;

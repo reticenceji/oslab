@@ -3,7 +3,7 @@
 extern void task_init();
 int os_test()
 {
-	const char *msg = "ZJU OS LAB 5             GROUP-G10\n";
+	const char *msg = "ZJU OS LAB 6             GROUP-G10\n";
 
     puts(msg);
 	task_init();

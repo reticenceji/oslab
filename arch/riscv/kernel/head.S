@@ -68,10 +68,9 @@ virtual_next:
 
     la sp, init_stack_top
     csrw sscratch, sp
-    j start_kernel
-#call start_kernel
 
-#exception handlers
+    call init_buddy_system
+    j start_kernel
 .align 2
 
 exception_addr_m:
