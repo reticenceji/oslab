@@ -14,5 +14,7 @@
 
 long sys_write(unsigned int fd, const char* buf, size_t count);
 long sys_getpid();
-
+void *mmap (void *__addr, size_t __len, int __prot,
+                   int __flags, int __fd, __off_t __offset);
+void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot);
 #endif
