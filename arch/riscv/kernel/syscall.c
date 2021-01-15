@@ -63,7 +63,7 @@ void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
     }
     if(flag)
     {
-        addr_suggest=get_unmapped_area(length);
+        addr_suggest=(unsigned long*)get_unmapped_area(length);
         vma_insert(mm,addr_suggest,length,prot);
         return addr_suggest;
     }
