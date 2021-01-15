@@ -1,7 +1,7 @@
 #include "sched.h"
-#include "types.h"
 #include "vma.h"
-
+#include "slub.h"
+#include "../../../include/stddef.h"
 struct vm_area_struct *vma_find(uint64 va)
 {
     struct vm_area_struct *ptr = current->mm->mmap;
@@ -21,7 +21,7 @@ struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t lengt
     new_node->vm_end = (unsigned long)start + length;
     new_node->vm_mm = mm;
     //实验指导里好像没提vm_page_prot的赋值
-    new_node->vm_page_prot = (pgprot_t)prot;
+    //new_node->vm_page_prot = (pgprot_t)prot;
     new_node->vm_flags = (unsigned long)prot;
     new_node->vm_prev = new_node->vm_next = NULL;
     return new_node;
@@ -136,7 +136,7 @@ int vma_split(uint64 va)
     struct vm_area_struct *ptr = current->mm->mmap;
     if (ptr->vm_start < va && va < ptr->vm_end)
     {
-        struct vm_area_struct *new_node = vma_build(ptr->mm, ptr->vm_start,
+        struct vm_area_struct *new_node = vma_build(ptr->vm_mm, ptr->vm_start,
                                                     va-ptr->vm_start, ptr->vm_flags);
         new_node->vm_next = ptr;
         current->mm->mmap = new_node;
@@ -156,7 +156,7 @@ int vma_split(uint64 va)
     }
     else
     {
-        struct vm_area_struct *new_node = vma_build(ptr->mm, ptr->vm_start,
+        struct vm_area_struct *new_node = vma_build(ptr->vm_mm, ptr->vm_start,
                                                     va-ptr->vm_start, ptr->vm_flags);
         new_node->vm_prev = ptr->vm_prev;
         new_node->vm_next = ptr;

@@ -10,3 +10,4 @@ typedef unsigned long  uint64;
 
 typedef unsigned int pid_t;
 typedef unsigned long __off_t;
+typedef unsigned long size_t;

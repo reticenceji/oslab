@@ -1,11 +1,19 @@
 #include "sched.h"
-#include "types.h"
+#include "../../../include/types.h"
 #include "slub.h"
+
 
 extern void ret_from_fork(uint64 *stack);
 /* TODO 为子进程创建它的task_struct(包括Stack的整个Page，并修改部分内容。如果创建失败（NR_TASK）返回NULL，否则返回它的地址 
  * stack内容
  */
+
+/* TODO 主要功能是调用汇编的ret_from_fork */
+void fork_ret()
+{
+    ret_from_fork(current->stack);
+    return;
+}
 void copy_mm(struct task_struct *child)
 {
     child->mm = (struct mm_struct *)kmalloc(sizeof(struct mm_struct));
@@ -45,9 +53,4 @@ pid_t fork()
     return child_ts->pid;
 }
 
-/* TODO 主要功能是调用汇编的ret_from_fork */
-void fork_ret()
-{
-    ret_from_fork(current->stack);
-    return;
-}
+

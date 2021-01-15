@@ -1,5 +1,5 @@
 VPATH = ../../../lib
-all: head.o entry.o strap.o sched.o vm.o 
+all: head.o entry.o strap.o sched.o vm.o syscall.o slub.o buddy.o mm.o vma.o fault.o fork.o
 .PHONY: all
 
 head.o: head.S entry.o vm.o
@@ -27,7 +27,7 @@ buddy.o: buddy.c
 	$(GCC) $(CFLAG) -c slub.c -o $@
 
 mm.o: mm.c slub.o vma.o vm.o
-	$(GCC) $(CFLAG) -c mm.c -o $@
+	$(GCC) $(CFLAG) -c mm.c -o $@ 
 
 vma.o: vma.c 
 	$(GCC) $(CFLAG) -c vma.c -o $@

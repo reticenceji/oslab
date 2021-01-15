@@ -10,7 +10,7 @@
 #define PAGE_MASK ((1UL << PPN_SHIFT) - 1)
 #define MEM_SHIFT (24 - PAGE_SHIFT)
 #define STRUCTURE_SIZE 16UL
-
+#define VM_START 0xffffffe000000000
 
 struct page {
 	unsigned long flags;		

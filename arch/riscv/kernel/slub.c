@@ -1,7 +1,7 @@
 #include "slub.h"
-#include "stddef.h"
+#include "../../../include/stddef.h"
 #include "buddy.h"
-#include "string.h"
+#include "../../../include/string.h"
 
 enum{
     PAGE_FREE,
@@ -169,20 +169,25 @@ void *cache_create(const char *name, size_t size,
 
 void *cache_alloc_pages(struct kmem_cache *cache)
 {
-    void *p;
-    void *tp;
+	void *p;
+	void *tp;
+	struct page *page;
 
-    memset(p, 0, (cache->nr_page_per_slub) << PAGE_SHIFT);	
-    set_page_attr(p, cache->nr_page_per_slub, PAGE_SLUB);
-    tp = init_object_list(p, cache->size, ((cache->nr_page_per_slub)<< PAGE_SHIFT));
-    cache->freelist = p; 
-    page = ADDR_TO_PAGE(p);
-    page->slub = cache;
-    INIT_LIST_HEAD(&(page->slub_list));
-    list_add_tail(&(cache->list), &(page->slub_list));
-    cache->nr_partial++;
-    
-    return p;
+	p = alloc_pages(cache->nr_page_per_slub);
+	if(p == NULL)
+		return NULL;
+
+	memset(p, 0, (cache->nr_page_per_slub) << PAGE_SHIFT);	
+	set_page_attr(p, cache->nr_page_per_slub, PAGE_SLUB);
+	tp = init_object_list(p, cache->size, ((cache->nr_page_per_slub)<< PAGE_SHIFT));
+	cache->freelist = p; 
+	page = ADDR_TO_PAGE(p);
+	page->slub = cache;
+	INIT_LIST_HEAD(&(page->slub_list));
+	list_add_tail(&(cache->list), &(page->slub_list));
+	cache->nr_partial++;
+	
+	return p;
 }
 
 static void inline free_slub_structure(struct kmem_cache *cache)

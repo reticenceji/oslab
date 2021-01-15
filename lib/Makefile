@@ -1,4 +1,4 @@
-all : put.o rand.o
+all : put.o rand.o string.o
 .PHONY: all
 put.o: put.c
 	$(GCC) -c $(CFLAG) -c $^ -o $@

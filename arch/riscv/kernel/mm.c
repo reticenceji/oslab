@@ -7,7 +7,6 @@
 /* 检查从start到end的所有内容是不是已经被映射了 */
 static int test_range(uint64 start,uint64 end,struct vm_area_struct *vma)
 {
-    struct vm_area_struct *vma,*ins_vma;
     uint64 tmp_end;
     for (;start<end;start = vma->vm_end)
     {
@@ -42,7 +41,7 @@ static inline void edit_vma(uint64 start,uint64 end,int protection)
 static inline void edit_page_table(uint64 va_start,uint64 va_end, int protection)
 {
     uint64* base =  VP(current->mm->satp & ~PAGE_MASK); //一级页表base
-    uint64* va;
+    uint64 va;
     int index;
     for (va = va_start;va<va_end;va+=PAGE_SIZE)
     {
@@ -68,14 +67,14 @@ int mprotect (void *__addr, size_t __len, int __prot)
     /* 对齐 */
     if (!((uint64)__addr & ~PAGE_MASK))
         return -1;
-    len = (len+PAGE_MASK) & ~PAGE_MASK; 
+    __len = (__len+PAGE_MASK) & ~PAGE_MASK; 
     start = __addr;
     end = __addr+end;
     /* overflow, 或者试图修改别的位 */
     if (end<start || __prot&(0xF)) 
         return -1;          
     /* 中间存在没有映射的区域 */
-    if (test_range(start,end,current->vma))
+    if (test_range(start,end,current->mm->mmap))
         return -1;
 
     edit_vma(start,end,__prot);
@@ -85,7 +84,7 @@ int mprotect (void *__addr, size_t __len, int __prot)
 //===================
 static void free_page_tables(uint64 pagetable, uint64 va, uint64 n, int free_frame)
 {
-    uint64 base = pagetable;
+    uint64 *base = (uint64*)pagetable;
     uint64 tmp_va = va;
     int index;
     for (int i = 0; i < n; i++, tmp_va+=PAGE_SIZE)
@@ -112,8 +111,8 @@ int munmap(void *start, size_t length)
 {
     uint64 end = ((uint64)start + length);
     end = end - end%PAGE_SIZE + PAGE_SIZE-1;
-    start -= start % PAGE_SIZE;
-    n = (end - start + 1) / PAGE_SIZE;
+    start -= (uint64)start % PAGE_SIZE;
+    uint64 n = (end - (uint64)start + 1) / PAGE_SIZE;
 
     if (vma_contiguous(start, end) == -1)
     {
@@ -127,16 +126,16 @@ int munmap(void *start, size_t length)
     struct vm_area_struct *ptr_end = vma_find(end);
     if (ptr_start == ptr_end)
     {
-        vma_split(start);   //[vm_start, vm_end) --> [vm_start, start) [start, vm_end)
+        vma_split((uint64)start);   //[vm_start, vm_end) --> [vm_start, start) [start, vm_end)
         vma_split(end);     //[start, vm_end) --> [start, end) [end, vm_end)
         //vma_delete(vma_find(start)->vm_start);
-        vma_delete(ptr_start->next->vm_start);
+        vma_delete(ptr_start->vm_next->vm_start);
         return 0;
     }
     while (ptr_start != ptr_end)
     {
         ptr_start = ptr_start->vm_next;
-        vma_delete(ptr_start->prev->vm_start);
+        vma_delete(ptr_start->vm_prev->vm_start);
     }
     vma_split(end);
     vma_delete(ptr_end->vm_start);
@@ -145,13 +144,6 @@ int munmap(void *start, size_t length)
 
 
 //======================
-
-void *mmap (void *__addr, size_t __len, int __prot,
-                   int __flags, int __fd, __off_t __offset)
-{
-    return do_mmap(current->mm, __addr, __len, __prot);
-}
-
 static unsigned long get_unmapped_area(size_t length)
 {
     unsigned long vm_suggested=0;
@@ -193,4 +185,10 @@ static void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
         vma_insert(mm,start,length,prot);
         return start;
     }
+}
+
+void *mmap (void *__addr, size_t __len, int __prot,
+                   int __flags, int __fd, __off_t __offset)
+{
+    return do_mmap(current->mm, __addr, __len, __prot);
 }
