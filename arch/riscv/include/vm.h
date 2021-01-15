@@ -2,9 +2,12 @@
 #define _VM_H
 
 #include "sched.h"
+#include "../../../include/types.h"
 
 #define REG_SIZE (8)
-#define PAGE_SIZE 4096
+#ifndef PAGE_SIZE
+    #define PAGE_SIZE 4096
+#endif
 #define ENTRY_PER_PAGE (PAGE_SIZE / 8)
 #define TEST_PAGE_NUM 10000    //这里设计了比实际需要更多的数量
 
@@ -70,7 +73,6 @@
 /* 页表模式SV39 */
 #define MODE_SV39 0x8000000000000000
 #define KERNEL_SATP (MODE_SV39 | ((KERNEL_ALLOCABLE_START_P) >> 12))
-typedef unsigned long long uint64;  //指向一个地址
 
 /* 循环队列实现物理内存管理 */
 typedef struct frame_queue

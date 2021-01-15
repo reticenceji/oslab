@@ -1,6 +1,8 @@
 #include "put.h"
 #include "syscall.h"
 #include "strap.h"
+#include "sched.h"
+#include "../../../include/string.h"
 
 void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
 {

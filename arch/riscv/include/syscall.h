@@ -19,5 +19,6 @@ int mprotect (void *__addr, size_t __len, int __prot);
 void *mmap (void *__addr, size_t __len, int __prot,
                    int __flags, int __fd, __off_t __offset);
 pid_t fork();
+void do_page_fault(uintptr_t *regs);
 #endif
 

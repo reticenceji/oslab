@@ -26,5 +26,14 @@ slub.o: slub.c buddy.o
 buddy.o: buddy.c 
 	$(GCC) $(CFLAG) -c slub.c -o $@
 
-mm.o: mm.c slub.o
+mm.o: mm.c slub.o vma.o vm.o
 	$(GCC) $(CFLAG) -c mm.c -o $@
+
+vma.o: vma.c 
+	$(GCC) $(CFLAG) -c vma.c -o $@
+
+fault.o: fault.c vma.o
+	$(GCC) $(CFLAG) -c fault.c -o $@
+
+fork.o: fork.c slub.o
+	$(GCC) $(CFLAG) -c fork.c -o $@

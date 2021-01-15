@@ -1,5 +1,6 @@
 #ifndef _SCHED_H
 #define _SCHED_H
+#include "../../../include/types.h"
 
 #define TASK_SIZE   (4096)
 #define THREAD_OFFSET  (5 * 0x08)
@@ -126,10 +127,10 @@ void switch_to(struct task_struct* next);
 void dead_loop(void);
 
 /* 获取当前进程pid */
-long getpid(void);
+pid_t getpid(void);
 
 /* 获得一个没有被使用过的pid */
-long newpid(void);
+pid_t newpid(void);
 
 #endif
 
