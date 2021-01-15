@@ -105,6 +105,7 @@ struct task_struct
     struct mm_struct *mm;
     struct thread_struct thread; // 该进程状态段
     uint64 *stack;  //保存异常发生时的寄存器状态
+    uint64 *user_sp;
 };
 
 /* 进程初始化 创建四个dead_loop进程 */ 

@@ -1,7 +1,7 @@
 #ifndef _PUT_H
 #define _PUT_H
 #define UART16550A_DR (volatile unsigned char *)0x10000000
-#include "stddef.h"
+#include "../../../include/stddef.h"
 
 void puti(int num);
 int puts(const char *s);

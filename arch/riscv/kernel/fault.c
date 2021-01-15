@@ -22,15 +22,25 @@ void do_page_fault(uintptr_t *regs)
     if (scause == EX_LOAD_PF && vma->flag & VM_READ) 
     {
         //在我们的实验中，读写错误就给他分配一块frame写，kernel和user统一用kmalloc分配
-        sp = kmalloc(PAGE_SIZE);
-        create_mapping(current->satp, stval & ~PAGE_MASK, sp, PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
+        if (current->pid >1) 
+        {
+            sp = kmalloc(PAGE_SIZE);
+            create_mapping(current->satp, stval & ~PAGE_MASK, sp, PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
+        }
+        else
+            create_mapping(current->satp, stval & ~PAGE_MASK, current->user_sp, PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
         return;
     }
     if (scause == EX_STORE_PF && vma->flag & VM_WRITE) 
     {
         //在我们的实验中，读写错误就给他分配一块frame写，kernel和user统一用kmalloc分配
-        sp = kmalloc(PAGE_SIZE);
-        create_mapping(current->satp, stval & ~PAGE_MASK, sp, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
+        if (current->pid >1) 
+        {
+            sp = kmalloc(PAGE_SIZE);
+            create_mapping(current->satp, stval & ~PAGE_MASK, sp, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
+        }
+        else
+            create_mapping(current->satp, stval & ~PAGE_MASK, current->user_sp, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
         return;
     }
     if (scause == EX_INSTRUCTION_PF && vma->flag & VM_EXEC) 

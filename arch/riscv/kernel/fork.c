@@ -21,12 +21,14 @@ void copy_mmap(struct task_struct *child)
 
 struct task_struct* dup_task_struct (struct task_struct *current)
 {
-    struct task_struct *child = (struct task_struct *)VP(kmalloc(TASK_SIZE));
+    struct task_struct *child = (struct task_struct *)kmalloc(TASK_SIZE);
     memmove(child,current,TASK_SIZE);   //string.h里给的，能用吗，还是要自己写一个？
     child->pid = new_pid();//可以给pid创建一个bitmap标记使用
-    child->sscratch= ;  //user stack
+    child->user_sp = kmalloc(PAGE_SIZE);  //user stack
+    memmove(child->user_sp,current->stack,PAGE_SIZE);
     child->thread.sp = (uint64)child+PAGE_SIZE; //kernel stack
     child->thread.ra = fork_ret;
+    return child;
 }
 
 /* TODO 对于父进程，返回子进程的PID；对于子进程，返回0 */
