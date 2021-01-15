@@ -27,3 +27,49 @@ long sys_write(unsigned int fd, const char* buf, size_t count)
 
     
 }
+void *mmap (void *__addr, size_t __len, int __prot,
+                   int __flags, int __fd, __off_t __offset)
+{
+    return do_mmap(current->mm, __addr, __len, __prot);
+}
+
+unsigned long get_unmapped_area(size_t length)
+{
+    unsigned long vm_suggested=0;
+    struct vm_area_struct *pointer_to_vma=current->mm->mmap;
+ 
+    for(;pointer_to_vma!=NULL;pointer_to_vma=pointer_to_vma->vm_next)
+    {
+        if(vm_suggested+length<=pointer_to_vma->vm_start)
+        {
+            break;
+        }
+        vm_suggested=pointer_to_vma->vm_end;
+        
+    }
+    return vm_suggested;
+    
+}
+void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
+{
+    unsigned long *addr_suggest;
+    struct vm_area_struct *pointer_to_vma=mm->mmap;
+    struct vm_area_struct *newvma;
+    int flag=0;
+    for(;pointer_to_vma;pointer_to_vma=pointer_to_vma->vm_next)
+    {
+        if((start<=pointer_to_vma->vm_end && start>=pointer_to_vma->vm_start) || (start+length<=pointer_to_vma->vm_end && start+length>=pointer_to_vma->vm_start))
+            flag=1;
+    }
+    if(flag)
+    {
+        addr_suggest=get_unmapped_area(length);
+        vma_insert(mm,addr_suggest,length,prot);
+        return addr_suggest;
+    }
+    else 
+    {
+        vma_insert(mm,start,length,prot);
+        return start;
+    }
+}
