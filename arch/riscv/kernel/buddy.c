@@ -1,5 +1,4 @@
 #include "buddy.h"
-#include "types.h"
 #include "vm.h"
 
 #define LEFT_LEAF(INDEX) (((INDEX)<<1)+1)
@@ -47,7 +46,7 @@ void init_buddy_system(void)
     alloc_pages((uint64)&_end-(uint64)&_start);
 }
 
-void * alloc_pages(int size) {
+void *alloc_pages(int size) {
     unsigned index = 0;
     unsigned node_size;
     uint64 va;

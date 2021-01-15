@@ -8,7 +8,7 @@ head.o: head.S entry.o vm.o
 entry.o: entry.S strap.o
 	$(GCC) $(CFLAG) -c entry.S -o $@ 
 
-strap.o: strap.c syscall.o
+strap.o: strap.c syscall.o 
 	$(GCC) $(CFLAG) -c strap.c -o $@
 
 sched.o: sched.c rand.o vm.o
@@ -24,7 +24,7 @@ slub.o: slub.c buddy.o
 	$(GCC) $(CFLAG) -c slub.c -o $@
 
 buddy.o: buddy.c 
-	$(GCC) $(CFLAG) -c slub.c -o $@
+	$(GCC) $(CFLAG) -c buddy.c -o $@
 
 mm.o: mm.c slub.o vma.o vm.o
 	$(GCC) $(CFLAG) -c mm.c -o $@ 
@@ -35,5 +35,5 @@ vma.o: vma.c
 fault.o: fault.c vma.o
 	$(GCC) $(CFLAG) -c fault.c -o $@
 
-fork.o: fork.c slub.o
+fork.o: fork.c slub.o vm.o vma.o
 	$(GCC) $(CFLAG) -c fork.c -o $@

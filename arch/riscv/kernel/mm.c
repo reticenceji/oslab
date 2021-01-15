@@ -4,6 +4,14 @@
 #define PAGE_MASK (0x3FF)
 #define FLAG2PAGE_PROT(FLAG) (((FLAG)&0x7)>>1)
 
+static int test_range(uint64 start,uint64 end,struct vm_area_struct *vma);
+static inline void edit_vma(uint64 start,uint64 end,int protection);
+static inline void edit_page_table(uint64 va_start,uint64 va_end, int protection);
+static void free_page_tables(uint64 pagetable, uint64 va, uint64 n, int free_frame);
+static unsigned long get_unmapped_area(size_t length);
+static void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot);
+
+
 /* 检查从start到end的所有内容是不是已经被映射了 */
 static int test_range(uint64 start,uint64 end,struct vm_area_struct *vma)
 {

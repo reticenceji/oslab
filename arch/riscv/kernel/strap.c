@@ -40,7 +40,7 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
     case EX_INSTRUCTION_PF:
     case EX_LOAD_PF:
     case EX_STORE_PF:
-        memcopy(current->stack,regs,PT_REGS_SIZE);
+        memmove(current->stack,regs,PT_REGS_SIZE);
         do_page_fault(regs);
         break;
     default:

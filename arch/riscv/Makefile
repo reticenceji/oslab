@@ -11,10 +11,10 @@ System.map: vmlinux
 Image: vmlinux
 	$(OBJCOPY) -O binary ../../vmlinux boot/Image --strip-all
 vmlinux: put.o rand.o main.o test.o string.o kernel/head.o kernel/entry.o kernel/sched.o kernel/strap.o kernel/vm.o \
-			kernel/syscall.o kernel/mm.o kernel/slub.o kernel/buddy.o kernel/fault.o kernel/fork.o kernel/vmlinux.lds
+			kernel/syscall.o kernel/mm.o kernel/slub.o kernel/buddy.o kernel/fault.o kernel/fork.o kernel/vma.o kernel/vmlinux.lds
 	$(LD) $(word 1,$^) $(word 2,$^) $(word 3,$^) $(word 4,$^) $(word 5,$^)\
 		kernel/head.o kernel/entry.o kernel/sched.o kernel/strap.o kernel/vm.o \
-		kernel/syscall.o kernel/mm.o kernel/slub.o kernel/buddy.o kernel/fault.o kernel/fork.o \
+		kernel/syscall.o kernel/mm.o kernel/slub.o kernel/buddy.o kernel/fault.o kernel/fork.o kernel/vma.o\
 		-T kernel/vmlinux.lds -o ../../$@
 
 
