@@ -54,7 +54,7 @@ void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
 {
     unsigned long *addr_suggest;
     unsigned long start1;
-    start1=(unsigned)start;
+    start1=(unsigned long)start;
     struct vm_area_struct *pointer_to_vma=mm->mmap;
     struct vm_area_struct *newvma;
     int flag=0;
