@@ -8,7 +8,7 @@ static int test_range(uint64 start,uint64 end,struct vm_area_struct *vma);
 static inline void edit_vma(uint64 start,uint64 end,int protection);
 static inline void edit_page_table(uint64 va_start,uint64 va_end, int protection);
 static void free_page_tables(uint64 pagetable, uint64 va, uint64 n, int free_frame);
-static unsigned long get_unmapped_area(size_t length);
+static uint64 get_unmapped_area(size_t length);
 static void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot);
 
 
@@ -152,9 +152,9 @@ int munmap(void *start, size_t length)
 
 
 //======================
-static unsigned long get_unmapped_area(size_t length)
+static uint64 get_unmapped_area(size_t length)
 {
-    unsigned long vm_suggested=0;
+    uint64 vm_suggested=0;
     struct vm_area_struct *pointer_to_vma=current->mm->mmap;
  
     for(;pointer_to_vma!=NULL;pointer_to_vma=pointer_to_vma->vm_next)
@@ -171,9 +171,9 @@ static unsigned long get_unmapped_area(size_t length)
 }
 static void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
 {
-    unsigned long *addr_suggest;
-    unsigned long start1;
-    start1=(unsigned long)start;
+    uint64 *addr_suggest;
+    uint64 start1;
+    start1=(uint64)start;
     struct vm_area_struct *pointer_to_vma=mm->mmap;
     struct vm_area_struct *newvma;
     int flag=0;
@@ -184,7 +184,7 @@ static void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
     }
     if(flag)
     {
-        addr_suggest=(unsigned long*)get_unmapped_area(length);
+        addr_suggest=(uint64*)get_unmapped_area(length);
         vma_insert(mm,addr_suggest,length,prot);
         return addr_suggest;
     }

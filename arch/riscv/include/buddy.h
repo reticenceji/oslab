@@ -5,7 +5,7 @@
 
 //它叫bitmap，但不是bitmap。存储的是longest
 struct buddy {
-	unsigned long size;
+	uint64 size;
 	unsigned *bitmap; 
 };
 

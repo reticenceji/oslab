@@ -7,7 +7,7 @@
 void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
 {
     //可能会有两个返回值，虽然目前都只有一个
-    unsigned long long ret0=0,ret1=0;
+    uint64 ret0=0,ret1=0;
     switch (scause)
     {
     case EX_ECALL_FROM_U:

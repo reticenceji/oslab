@@ -49,11 +49,11 @@ void task_init(void)
     task[0]->pid = 0;
     pid_bitmap |= 0x1<<task[0]->pid;
     task[0]->stack = kmalloc(PT_REGS_SIZE);     //按照要求加的
-    task[0]->thread.sp = (unsigned long long)task[0] + TASK_SIZE;
+    task[0]->thread.sp = (uint64)task[0] + TASK_SIZE;
     #ifdef SJF
-    for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
+    for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {
-        unsigned long long pgtbl = alloc_frame();
+        uint64 pgtbl = alloc_frame();
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
@@ -73,17 +73,17 @@ void task_init(void)
         pid_bitmap |= 0x1<<task[i]->pid;
         task[i]->stack = kmalloc(PT_REGS_SIZE);     //按照要求加的
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
-        task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
-        task[i]->thread.ra = (unsigned long long)init_epc;
+        task[i]->sscratch = (uint64)task[i] + TASK_SIZE;    //我的理解是thread.sp是用户栈, sscratch是内核栈, 切换时从这里取值交换
+        task[i]->thread.ra = (uint64)init_epc;
         //print("[PID = %l] Process Create Successfully! counter = %d\n",i,task[i]->counter);
     }
     init_epc0();
     #endif
 
     #ifdef PRIORITY
-    for (unsigned long long i=1; i <= LAB_TEST_NUM; i++)
+    for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {        
-        unsigned long long pgtbl = alloc_frame();
+        uint64 pgtbl = alloc_frame();
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
@@ -103,8 +103,8 @@ void task_init(void)
         pid_bitmap |= 0x1<<task[i]->pid;
         task[i]->stack = kmalloc(PT_REGS_SIZE);     //按照要求加的
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
-        task[i]->sscratch = (unsigned long long)task[i] + TASK_SIZE;
-        task[i]->thread.ra = (unsigned long long)init_epc;
+        task[i]->sscratch = (uint64)task[i] + TASK_SIZE;
+        task[i]->thread.ra = (uint64)init_epc;
         //print("[PID = %l] Process Create Successfully! counter = %d priority = %d\n",i,task[i]->counter,task[i]->priority);
     }
     init_epc0();

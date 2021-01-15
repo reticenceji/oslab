@@ -34,9 +34,9 @@ void puti(int x)
     return;
 }
 
-void putX(unsigned long long x)
+void putX(uint64 x)
 {
-    unsigned long long digit = 1, tmp = x;
+    uint64 digit = 1, tmp = x;
     while (tmp >= 16)
     {
         digit = digit << 4;
@@ -58,7 +58,7 @@ void print(const char *fmt, ...)
 {
     va_list ap;
     int d;
-    unsigned long long x;
+    uint64 x;
     char c, *s;
 
     va_start(ap, fmt);
@@ -80,8 +80,8 @@ void print(const char *fmt, ...)
                     d = va_arg(ap, long);
                     puti(d);
                     break;
-            case 'X': /* 十六进制输出 unsigned long long */
-                    x = va_arg(ap, unsigned long long );
+            case 'X': /* 十六进制输出 uint64 */
+                    x = va_arg(ap, uint64 );
                     putX(x);
                     break;
             case 'c': /* 字符 */

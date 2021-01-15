@@ -53,29 +53,29 @@ extern struct task_struct * task[NR_TASKS];
 /* 进程状态段数据结构 */
 struct thread_struct
 {
-    unsigned long long ra;
-    unsigned long long sp;
-    unsigned long long s0;
-    unsigned long long s1;
-    unsigned long long s2;
-    unsigned long long s3;
-    unsigned long long s4;
-    unsigned long long s5;
-    unsigned long long s6;
-    unsigned long long s7;
-    unsigned long long s8;
-    unsigned long long s9;
-    unsigned long long s10;
-    unsigned long long s11;
+    uint64 ra;
+    uint64 sp;
+    uint64 s0;
+    uint64 s1;
+    uint64 s2;
+    uint64 s3;
+    uint64 s4;
+    uint64 s5;
+    uint64 s6;
+    uint64 s7;
+    uint64 s8;
+    uint64 s9;
+    uint64 s10;
+    uint64 s11;
 };
 /* 进程内存管理结构 */
 
-typedef struct { unsigned long pgprot; } pgprot_t;
+typedef struct { uint64 pgprot; } pgprot_t;
 struct vm_area_struct {
     /* Our start address within vm_area. */
-    unsigned long vm_start;		
+    uint64 vm_start;		
     /* The first byte after our end address within vm_area. */
-    unsigned long vm_end;		
+    uint64 vm_end;		
     /* linked list of VM areas per task, sorted by address. */
     struct vm_area_struct *vm_next, *vm_prev;
     /* The address space we belong to. */
@@ -83,13 +83,13 @@ struct vm_area_struct {
     /* Access permissions of this VMA. */
     pgprot_t vm_page_prot;
     /* Flags */
-    unsigned long vm_flags;		
+    uint64 vm_flags;		
 };
 #define VMA_SIZE 64
 
 struct mm_struct 
 {
-    unsigned long long satp;
+    uint64 satp;
     struct vm_area_struct *mmap;    //参照Linux实际实现命名
 };
 /* 进程数据结构 */
@@ -101,8 +101,8 @@ struct task_struct
     long blocked;
     long pid;      // 进程标识符
     // Above Size Cost: 40 bytes
-    unsigned long long sepc;
-    unsigned long long sscratch;
+    uint64 sepc;
+    uint64 sscratch;
     struct mm_struct *mm;
     struct thread_struct thread; // 该进程状态段
     uint64 *stack;  //保存异常发生时的寄存器状态
@@ -120,7 +120,7 @@ void schedule(void);
 
 /* 切换当前任务current到下一个任务next */
 extern struct thread_struct* __switch_to(struct thread_struct* current,struct thread_struct* prev);
-extern struct thread_struct* __switch_page(unsigned long long current_satp);
+extern struct thread_struct* __switch_page(uint64 current_satp);
 void switch_to(struct task_struct* next);
 
 /* 死循环 */

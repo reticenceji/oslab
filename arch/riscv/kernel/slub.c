@@ -11,7 +11,7 @@ enum{
 };
 
 struct cache_area cache_region;
-unsigned long cache_tid = 0;
+uint64 cache_tid = 0;
 
 struct kmem_cache* slub_allocator[NR_PARTIAL] = {};
 void *page_base;
@@ -27,7 +27,7 @@ const char *kmem_cache_name[] = {"slub-objectsize-8   ", "slub-objectsize-16  ",
 #define GET_NR_PAGE_PER_SLUB(size) \
             (size < PAGE_SIZE ? 4 : ((size / PAGE_SIZE)+1)*4)
 #define ADDR_TO_PAGE(addr) \
-            ((struct page *)(page_base + ((((unsigned long) addr - VM_START) & PAGE_MASK) >> PAGE_SHIFT) * STRUCT_PAGE_SIZE))
+            ((struct page *)(page_base + ((((uint64) addr - VM_START) & PAGE_MASK) >> PAGE_SHIFT) * STRUCT_PAGE_SIZE))
 #define PAGE_TO_ADDR(page_addr) \
             ((void *)((((page_addr - page_base) / STRUCT_PAGE_SIZE) << PAGE_SHIFT) + VM_START))
 
@@ -44,7 +44,7 @@ void set_page_attr(void *addr, int nr, int attr)//create nr pages on addr and ma
         page->flags = attr;
         page->count = 0;
         page->header = npage;
-        page->next = (struct page *)((unsigned long)page + STRUCT_PAGE_SIZE);
+        page->next = (struct page *)((uint64)page + STRUCT_PAGE_SIZE);
         page = page->next;
     }
     page->flags = attr;
@@ -77,9 +77,9 @@ void clear_page_attr(struct page *p)//clear link of pages
 
 void* init_object_list(void *addr, size_t objsize, size_t size)
 {
-    unsigned long end = (unsigned long)addr + size;
-    unsigned long this_obj = (unsigned long)addr;
-    unsigned long next_obj = (unsigned long)addr + objsize;
+    uint64 end = (uint64)addr + size;
+    uint64 this_obj = (uint64)addr;
+    uint64 next_obj = (uint64)addr + objsize;
 
     while(next_obj < end){
         *(void **)(this_obj) = (void *)next_obj;

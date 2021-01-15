@@ -17,12 +17,12 @@ struct vm_area_struct *vma_find(uint64 va)
 struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t length, int prot)
 {
     struct vm_area_struct *new_node = (struct vm_area_struct *)kmalloc(VMA_SIZE);
-    new_node->vm_start = (unsigned long)start;
-    new_node->vm_end = (unsigned long)start + length;
+    new_node->vm_start = (uint64)start;
+    new_node->vm_end = (uint64)start + length;
     new_node->vm_mm = mm;
     //实验指导里好像没提vm_page_prot的赋值
     //new_node->vm_page_prot = (pgprot_t)prot;
-    new_node->vm_flags = (unsigned long)prot;
+    new_node->vm_flags = (uint64)prot;
     new_node->vm_prev = new_node->vm_next = NULL;
     return new_node;
 }

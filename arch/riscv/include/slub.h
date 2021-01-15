@@ -13,7 +13,7 @@
 #define VM_START 0xffffffe000000000
 
 struct page {
-	unsigned long flags;		
+	uint64 flags;		
 	int count;		
 	struct page *header;
 	struct page *next;
@@ -31,16 +31,16 @@ struct cache_area{
 struct kmem_cache {
 	/* kmem_cache_cpu */
 	void **freelist;	/* Pointer to next available object */
-	unsigned long tid;	/* Globally unique transaction id */
+	uint64 tid;	/* Globally unique transaction id */
 	struct page *page;	/* The slab from which we are allocating */
 
 	/* Used for retrieving partial slabs, etc. */
 	int refcount;
-	unsigned long min_partial;
+	uint64 min_partial;
 	size_t size;	/* The size of an object including metadata */
 	size_t object_size;/* The size of an object without metadata */
 	unsigned int offset;	/* Free pointer offset */
-	unsigned long nr_page_per_slub;
+	uint64 nr_page_per_slub;
 
 	void (*init_func)(void *);
 	unsigned int inuse;		/* Offset to metadata */
@@ -50,11 +50,11 @@ struct kmem_cache {
 	struct list_head list;	/* List of slab caches */
 
 	/* kmem_cache_node */
-	unsigned long nr_partial;
+	uint64 nr_partial;
 	struct list_head partial;
 #ifdef CONFIG_SLUB_DEBUG
-	unsigned long nr_slabs;
-	unsigned long total_objects;
+	uint64 nr_slabs;
+	uint64 total_objects;
 	struct list_head full;
 #endif
 };
