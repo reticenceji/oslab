@@ -11,7 +11,7 @@ extern uint64 bss_start;
 extern uint64 bss_end;
 extern uint64 other_start;
 extern uint64 _end;
-
+static uint64* pgtbl;
 /* 判断队列是否为满, 为满返回1, 否则返回0 */
 static int fq_is_full(frame_queue_t *fq);
 /* 添加一个页表项 */
@@ -71,9 +71,8 @@ void free_frame()
     fq->rear = (fq->rear+1) % fq->capacity;
 }
 
-__attribute__((optimize("O0"))) uint64* paging_init()
+__attribute__((optimize("O0"))) void paging_init()
 {
-    uint64* pgtbl;
     init_frame_queue();
     pgtbl = kmalloc(PAGE_SIZE);
     create_mapping(pgtbl, VP((uint64)&text_start) , (uint64)&text_start, (uint64)&text_end - (uint64)&text_start, FLAG_R|FLAG_X|FLAG_V);
@@ -83,7 +82,6 @@ __attribute__((optimize("O0"))) uint64* paging_init()
     create_mapping(pgtbl, VP((uint64)&other_start), (uint64)&other_start, KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-    return pgtbl;
 }
 
 __attribute__((optimize("O0"))) void kernel_mapping(uint64 *pgtbl)
@@ -160,4 +158,9 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         }
     }
     return;
+}
+
+uint64* get_kernel_satp()
+{
+    return (MODE_SV39 | ((uint64)pgtbl >> 12));
 }

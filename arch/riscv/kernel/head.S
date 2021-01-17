@@ -57,8 +57,8 @@ _start_retaddr:
     call slub_init
     call paging_init
 
-    li t0,SATP
-    csrw satp,t0
+    call get_kernel_satp
+    csrw satp,a0
 virtual_next:
     sfence.vma zero, zero
 

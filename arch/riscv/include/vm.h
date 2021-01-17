@@ -75,7 +75,6 @@
 
 /* 页表模式SV39 */
 #define MODE_SV39 0x8000000000000000
-#define KERNEL_SATP (MODE_SV39 | ((KERNEL_ALLOCABLE_START_P) >> 12))
 
 /* 循环队列实现物理内存管理 */
 typedef struct frame_queue
@@ -98,8 +97,11 @@ void free_frame();
 /* 页表映射的统一接口 */
 void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm);
 
-/* 初始化地址映射, 返回基地址*/
-uint64* paging_init();
+/* 初始化地址映射 */
+void paging_init();
+
+/* 返回kernel页表地址 */
+uint64 * get_kernel_satp();
 
 /* 映射内核页表 */
 void kernel_mapping(uint64 *pgtbl);

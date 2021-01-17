@@ -18,7 +18,7 @@ void task_init(void)
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->mm = (struct mm_struct*)(MM_START_V);
-    task[0]->mm->satp = KERNEL_SATP;
+    task[0]->mm->satp = get_kernel_satp();
     task[0]->counter = 0;
     task[0]->priority = 5;
     task[0]->blocked = 0;
@@ -29,7 +29,7 @@ void task_init(void)
     #ifdef SJF
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {
-        uint64 pgtbl = PP(kmalloc(PAGE_SIZE));
+        uint64 pgtbl = kmalloc(PAGE_SIZE);
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
@@ -59,7 +59,7 @@ void task_init(void)
     #ifdef PRIORITY
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {        
-        uint64 pgtbl = PP(kmalloc(PAGE_SIZE));
+        uint64 pgtbl = kmalloc(PAGE_SIZE);
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
