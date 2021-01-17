@@ -13,7 +13,7 @@ void do_page_fault(uintptr_t *regs)
     sepc = regs[CSR_SEPC];
     vma = vma_find(stval);
     print("[S] PAGE_FAULT: PID = %d\n",current->pid);
-    print("[S] PAGE_FAULT: scause: %X, sepc: 0x%X, badaddr: 0x%X\n",scause,sepc,stval);
+    print("[S] PAGE_FAULT: scause: %d, sepc: 0x%X, badaddr: 0x%X\n",scause,sepc,stval);
     // 如果VM没有被映射，错误
     if (vma==NULL) 
     {

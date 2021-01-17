@@ -75,7 +75,7 @@ __attribute__((optimize("O0"))) uint64* paging_init()
 {
     uint64* pgtbl;
     init_frame_queue();
-    pgtbl = (uint64*)alloc_frame();
+    pgtbl = kmalloc(PAGE_SIZE);
     create_mapping(pgtbl, VP((uint64)&text_start) , (uint64)&text_start, (uint64)&text_end - (uint64)&text_start, FLAG_R|FLAG_X|FLAG_V);
     create_mapping(pgtbl, VP((uint64)&rodata_start), (uint64)&rodata_start, (uint64)&rodata_end - (uint64)&rodata_start, FLAG_R|FLAG_V);
     create_mapping(pgtbl, VP((uint64)&data_start) , (uint64)&data_start, (uint64)&data_end - (uint64)&data_start, FLAG_R|FLAG_W|FLAG_V);
@@ -97,13 +97,11 @@ __attribute__((optimize("O0"))) void kernel_mapping(uint64 *pgtbl)
     create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 }
 
-
-
 __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
     int num_pd, num_pmd, num_pud;
-    int flag=0;   //Flag表示我们现在是否开启了页表
+    // int flag=0;   //Flag表示我们现在是否开启了页表
     /* 最后一张二级页表可能不能被三级页表填满，最后一张三级页表可能不能被entry填满 */
     int jmax, kmax;
     uint64 addr_pd, addr_pmd, addr_pud;
@@ -113,14 +111,14 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
     num_pd = (sz + PAGE_SIZE-1) >> 12;
     num_pmd = (num_pd + ENTRY_PER_PAGE-1) >> 9;
     num_pud = (num_pmd + ENTRY_PER_PAGE-1) >> 9;
-    flag = __is_page_open();
-    if (flag) pgtbl = (uint64 *)VP(pgtbl);
+    // flag = __is_page_open();
+    // if (flag) pgtbl = (uint64 *)VP(pgtbl);
     for (i = 0; i < num_pud && num_pud >= 0; i++)
     {
         vpn2 = (va >> 30) & 0x1FF;
         if (pgtbl[vpn2] == 0)
         {
-            addr_pud = alloc_frame();
+            addr_pud = kmalloc(PAGE_SIZE);
             add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
         }
         else
@@ -128,14 +126,14 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             addr_pud = (pgtbl[vpn2] >> 10) << 12;
         }
         jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
-        if (flag) addr_pud=(uint64)VP(addr_pud);
+        // if (flag) addr_pud=(uint64)VP(addr_pud);
 
         for (j = 0; j < jmax && jmax >= 0; j++)
         {
             vpn1 = (va >> 21) & 0x1FF;
             if ( ((uint64 *)addr_pud)[vpn1] == 0 )
             {
-                addr_pmd = alloc_frame();
+                addr_pmd = kmalloc(PAGE_SIZE);
                 add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
             }
             else
@@ -143,7 +141,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
                 addr_pmd = (((uint64 *)addr_pud)[vpn1] >> 10) << 12;
             }
             kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
-            if (flag) addr_pmd=(uint64)VP(addr_pmd);
+            // if (flag) addr_pmd=(uint64)VP(addr_pmd);
 
             for (k = 0; k < kmax && kmax >= 0; k++)
             {

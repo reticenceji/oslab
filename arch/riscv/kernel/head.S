@@ -53,6 +53,8 @@ _start_retaddr:
     li t1, MAP_OFFSET
     add t0,t0,t1
     csrw stvec, t0                  #设置supervisor mode异常处理地址
+    call init_buddy_system
+    call slub_init
     call paging_init
 
     li t0,SATP
@@ -69,8 +71,6 @@ virtual_next:
     la sp, init_stack_top
     csrw sscratch, sp
 
-    call init_buddy_system
-    call slub_init
     j start_kernel
 .align 2
 

@@ -2,7 +2,7 @@
 #include "../../../include/stddef.h"
 #include "buddy.h"
 #include "../../../include/string.h"
-
+#include "vm.h"
 enum{
     PAGE_FREE,
     PAGE_BUDDY,

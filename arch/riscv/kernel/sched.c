@@ -29,7 +29,7 @@ void task_init(void)
     #ifdef SJF
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {
-        uint64 pgtbl = alloc_frame();
+        uint64 pgtbl = PP(kmalloc(PAGE_SIZE));
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
@@ -45,7 +45,7 @@ void task_init(void)
         task[i]->counter = rand();
         task[i]->priority = 5;
         task[i]->blocked = 0;
-        task[i]->pid = i;
+        task[i]->pid = newpid();
         pid_bitmap |= 0x1<<task[i]->pid;
         task[i]->stack = kmalloc(PT_REGS_SIZE);     //按照要求加的
         task[i]->thread.sp = USER_STACK_BOTTOM_V;
@@ -59,7 +59,7 @@ void task_init(void)
     #ifdef PRIORITY
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {        
-        uint64 pgtbl = alloc_frame();
+        uint64 pgtbl = PP(kmalloc(PAGE_SIZE));
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
@@ -75,7 +75,7 @@ void task_init(void)
         task[i]->counter = 7-(i-1)%4;
         task[i]->priority = 5;
         task[i]->blocked = 0;
-        task[i]->pid = i;
+        task[i]->pid = newpid();
         pid_bitmap |= 0x1<<task[i]->pid;
         task[i]->stack = kmalloc(PT_REGS_SIZE);     //按照要求加的
         task[i]->thread.sp = USER_STACK_BOTTOM_V;

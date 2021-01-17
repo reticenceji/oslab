@@ -16,7 +16,7 @@ extern void ret_from_fork(uint64 *stack);
 static void copy_mm(struct task_struct *child)
 {
     child->mm = (struct mm_struct *)kmalloc(sizeof(struct mm_struct));
-    child->mm->satp = (uint64)kmalloc(PAGE_SIZE); //新开页表
+    child->mm->satp = (PP((uint64)kmalloc(PAGE_SIZE))>>12)|MODE_SV39; //新开页表
     kernel_mapping((uint64 *)child->mm->satp);    //映射kernel部分，按理来说是复制父进程的？这样子没有考虑kernel部分的映射发生改变的情况，也就是第一个TA说的。
     copy_mmap(child);//复制
 }

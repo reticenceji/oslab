@@ -6,7 +6,8 @@
 #define PARENT(INDEX) (((INDEX)-1)>>1)
 #define MAX(A,B) ((A)>(B)?(A):(B))
 #define OFFSET2VA(OFFSET) (((OFFSET)<<12)+KERNEL_START_V)
-#define VA2OFFSET(VA) (((VA)>>12)-KERNEL_START_V)
+#define OFFSET2PA(OFFSET) (((OFFSET)<<12)+KERNEL_START_P)
+#define VA2OFFSET(VA) ((VA-KERNEL_START_V)>>12)
 
 extern uint64 _start ;
 extern uint64 _end;
@@ -43,7 +44,7 @@ void init_buddy_system(void)
     buddy_system.size = (KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/ PAGE_SIZE; 
     buddy_system.bitmap = bitmap;
     init_bitmap(0,buddy_system.size);
-
+    //把kernel的代码标记为已经分配
     alloc_pages(((uint64)&_end-(uint64)&_start)/PAGE_SIZE);
 }
 
@@ -65,7 +66,10 @@ void *alloc_pages(int size) {
             index = RIGHT_LEAF(index);
     }
     /* 算出在大页表里的偏移 */
-    va = OFFSET2VA( (index + 1) * node_size - buddy_system.size);
+    if (__is_page_open())
+        va = OFFSET2VA( (index + 1) * node_size - buddy_system.size);
+    else
+        va = OFFSET2PA( (index + 1) * node_size - buddy_system.size);
     
     buddy_system.bitmap[index] = 0;
     //返回修改父节点的值
