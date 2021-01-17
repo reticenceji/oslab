@@ -25,6 +25,7 @@ static inline int fixsize(int size)
         fix_size<<=1;
         size>>=1;
     }
+    return fix_size;
 }
 
 static void init_bitmap(int index,int size)
@@ -68,7 +69,7 @@ void *alloc_pages(int size) {
     
     buddy_system.bitmap[index] = 0;
     //返回修改父节点的值
-    while (index) {
+    while (index>0) {
         index = PARENT(index);
         buddy_system.bitmap[index] = MAX(buddy_system.bitmap[LEFT_LEAF(index)],buddy_system.bitmap[RIGHT_LEAF(index)]);
     }

@@ -7,7 +7,7 @@ OBJCOPY=${CROSS_}objcopy
 ISA ?= rv64imafd
 ABI ?= lp64
 INCLUDE = -I ../include
-CF = -O3 -march=$(ISA) -mabi=$(ABI) -mcmodel=medany -ffunction-sections -fdata-sections -nostartfiles -nostdlib -nostdinc -static -lgcc -Wl,--nmagic -Wl,--gc-sections
+CF = -O0 -march=$(ISA) -mabi=$(ABI) -mcmodel=medany -ffunction-sections -fdata-sections -nostartfiles -nostdlib -nostdinc -static -lgcc -Wl,--nmagic -Wl,--gc-sections -g3
 CFLAG = ${CF} ${INCLUDE} -DPRIORITY
 
 #CFLAGS and CXXFLAGS are either the name of environment variables or of Makefile variables that can be set to specify additional switches to be passed to a compiler in the process of building computer software.

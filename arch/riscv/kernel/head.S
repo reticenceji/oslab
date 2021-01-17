@@ -70,6 +70,7 @@ virtual_next:
     csrw sscratch, sp
 
     call init_buddy_system
+    call slub_init
     j start_kernel
 .align 2
 
