@@ -44,7 +44,7 @@ void init_buddy_system(void)
     buddy_system.bitmap = bitmap;
     init_bitmap(0,buddy_system.size);
 
-    alloc_pages((uint64)&_end-(uint64)&_start);
+    alloc_pages(((uint64)&_end-(uint64)&_start)/PAGE_SIZE);
 }
 
 void *alloc_pages(int size) {
