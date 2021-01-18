@@ -54,7 +54,6 @@ _start_retaddr:
     add t0,t0,t1
     csrw stvec, t0                  #设置supervisor mode异常处理地址
     call init_buddy_system
-    call slub_init
     call paging_init
 
     call get_kernel_satp
@@ -70,7 +69,8 @@ virtual_next:
 
     la sp, init_stack_top
     csrw sscratch, sp
-
+    call slub_init
+    
     j start_kernel
 .align 2
 

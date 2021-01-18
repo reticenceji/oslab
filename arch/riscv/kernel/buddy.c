@@ -54,6 +54,7 @@ void *alloc_pages(int size) {
     uint64 va;
 
     size = fixsize(size);
+    buddy_system.bitmap = bitmap;
     /* 如果小于的话说明空间不够了 */
     if (buddy_system.bitmap[index] < size)
         return NULL;

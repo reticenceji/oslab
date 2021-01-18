@@ -29,52 +29,52 @@ static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm)
     return;
 } 
 
-static int fq_is_full(frame_queue_t *fq)
-{
-    return fq->front == (fq->rear+1) % fq->capacity;
-}
+// static int fq_is_full(frame_queue_t *fq)
+// {
+//     return fq->front == (fq->rear+1) % fq->capacity;
+// }
 
-static int fq_is_empty(frame_queue_t *fq)
-{
-    return fq->front == fq->rear;
-}
+// static int fq_is_empty(frame_queue_t *fq)
+// {
+//     return fq->front == fq->rear;
+// }
 
-void init_frame_queue()
-{
-    frame_queue_t *fq = &frame_queue;
-    fq->front = 0;
-    fq->capacity = TEST_FRAME_NUM + 1;
-    for (fq->rear=0;fq->rear<TEST_FRAME_NUM;fq->rear++)
-        fq->frame[fq->rear] = KERNEL_ALLOCABLE_START_P + FRAME_SIZE*fq->rear;
-}
+// void init_frame_queue()
+// {
+//     frame_queue_t *fq = &frame_queue;
+//     fq->front = 0;
+//     fq->capacity = TEST_FRAME_NUM + 1;
+//     for (fq->rear=0;fq->rear<TEST_FRAME_NUM;fq->rear++)
+//         fq->frame[fq->rear] = KERNEL_ALLOCABLE_START_P + FRAME_SIZE*fq->rear;
+// }
 
-uint64 alloc_frame()
-{
-    frame_queue_t *fq = &frame_queue;
-    if (fq_is_empty(fq))
-    {
-        return NULL;
-    }
-    uint64 valid_frame = fq->frame[fq->front];
-    fq->front = (fq->front+1) % fq->capacity;
-    return valid_frame;     
-}
+// uint64 alloc_frame()
+// {
+//     frame_queue_t *fq = &frame_queue;
+//     if (fq_is_empty(fq))
+//     {
+//         return NULL;
+//     }
+//     uint64 valid_frame = fq->frame[fq->front];
+//     fq->front = (fq->front+1) % fq->capacity;
+//     return valid_frame;     
+// }
 
-void free_frame()
-{
-    frame_queue_t *fq = &frame_queue;
-    if (fq_is_full(fq))
-    {
-        return;
-    }
-    fq->frame[fq->rear] = fq->frame[(fq->front-1) % fq->capacity];
-    fq->rear = (fq->rear+1) % fq->capacity;
-}
+// void free_frame()
+// {
+//     frame_queue_t *fq = &frame_queue;
+//     if (fq_is_full(fq))
+//     {
+//         return;
+//     }
+//     fq->frame[fq->rear] = fq->frame[(fq->front-1) % fq->capacity];
+//     fq->rear = (fq->rear+1) % fq->capacity;
+// }
 
 __attribute__((optimize("O0"))) void paging_init()
 {
-    init_frame_queue();
-    pgtbl = kmalloc(PAGE_SIZE);
+    // init_frame_queue();
+    pgtbl = alloc_pages(1);
     create_mapping(pgtbl, VP((uint64)&text_start) , (uint64)&text_start, (uint64)&text_end - (uint64)&text_start, FLAG_R|FLAG_X|FLAG_V);
     create_mapping(pgtbl, VP((uint64)&rodata_start), (uint64)&rodata_start, (uint64)&rodata_end - (uint64)&rodata_start, FLAG_R|FLAG_V);
     create_mapping(pgtbl, VP((uint64)&data_start) , (uint64)&data_start, (uint64)&data_end - (uint64)&data_start, FLAG_R|FLAG_W|FLAG_V);
@@ -116,7 +116,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         vpn2 = (va >> 30) & 0x1FF;
         if (pgtbl[vpn2] == 0)
         {
-            addr_pud = kmalloc(PAGE_SIZE);
+            addr_pud = alloc_pages(1);
             add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
         }
         else
@@ -131,7 +131,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             vpn1 = (va >> 21) & 0x1FF;
             if ( ((uint64 *)addr_pud)[vpn1] == 0 )
             {
-                addr_pmd = kmalloc(PAGE_SIZE);
+                addr_pmd = alloc_pages(1);
                 add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
             }
             else
