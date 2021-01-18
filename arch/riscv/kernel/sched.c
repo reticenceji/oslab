@@ -29,12 +29,12 @@ void task_init(void)
     #ifdef SJF
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {
-        uint64 pgtbl = kmalloc(PAGE_SIZE);
+        uint64 pgtbl = alloc_pages(1);
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
-        task[i]->mm->satp = MODE_SV39 | pgtbl>>12;
+        task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
         create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
@@ -59,12 +59,12 @@ void task_init(void)
     #ifdef PRIORITY
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {        
-        uint64 pgtbl = kmalloc(PAGE_SIZE);
+        uint64 pgtbl = alloc_pages(1);
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
         task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
 
-        task[i]->mm->satp = MODE_SV39 | pgtbl>>12;
+        task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
         create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,

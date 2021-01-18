@@ -22,10 +22,9 @@ static frame_queue_t frame_queue;
 static void add_entry(uint64 page_addr, int vpn, uint64 ppn, int perm)
 {
     ((uint64 *)page_addr)[vpn] = ((ppn >> 12) << 10) + perm;
-    #ifdef DEBUGTEST
-        if (__is_page_open())
-        print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 10)+perm);
-    #endif
+        // if (__is_page_open())
+        // print("\t[info]Page Table Entry: %X[%X]:%X\n", page_addr, vpn, ((ppn>>12) << 10)+perm);
+
     return;
 } 
 
@@ -99,7 +98,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
 {
     /* 分别是页表条目数量，三级页表数量，二级页表数量 */
     int num_pd, num_pmd, num_pud;
-    // int flag=0;   //Flag表示我们现在是否开启了页表
+    int flag=0;   //Flag表示我们现在是否开启了页表
     /* 最后一张二级页表可能不能被三级页表填满，最后一张三级页表可能不能被entry填满 */
     int jmax, kmax;
     uint64 addr_pd, addr_pmd, addr_pud;
@@ -109,7 +108,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
     num_pd = (sz + PAGE_SIZE-1) >> 12;
     num_pmd = (num_pd + ENTRY_PER_PAGE-1) >> 9;
     num_pud = (num_pmd + ENTRY_PER_PAGE-1) >> 9;
-    // flag = __is_page_open();
+    flag = __is_page_open();
     // if (flag) pgtbl = (uint64 *)VP(pgtbl);
     for (i = 0; i < num_pud && num_pud >= 0; i++)
     {
@@ -117,11 +116,12 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         if (pgtbl[vpn2] == 0)
         {
             addr_pud = alloc_pages(1);
-            add_entry((uint64)pgtbl, vpn2, addr_pud, FLAG_V);
+            add_entry((uint64)pgtbl, vpn2, flag?PP(addr_pud):addr_pud, FLAG_V);
         }
         else
         {
             addr_pud = (pgtbl[vpn2] >> 10) << 12;
+            if (flag) addr_pud = VP(addr_pud);
         }
         jmax = (i == num_pud-1) ? ((num_pmd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
         // if (flag) addr_pud=(uint64)VP(addr_pud);
@@ -132,11 +132,12 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             if ( ((uint64 *)addr_pud)[vpn1] == 0 )
             {
                 addr_pmd = alloc_pages(1);
-                add_entry(addr_pud, vpn1, addr_pmd, FLAG_V);
+                add_entry(addr_pud, vpn1, flag?PP(addr_pmd):addr_pmd, FLAG_V);
             }
             else
             {
                 addr_pmd = (((uint64 *)addr_pud)[vpn1] >> 10) << 12;
+                if (flag) addr_pmd = VP(addr_pmd);
             }
             kmax = (i == num_pud-1 && j == jmax-1) ? ((num_pd-1) & 0x1FF)+1 : ENTRY_PER_PAGE;
             // if (flag) addr_pmd=(uint64)VP(addr_pmd);
