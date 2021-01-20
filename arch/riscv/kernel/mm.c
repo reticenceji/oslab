@@ -1,4 +1,5 @@
 #include "sched.h"
+#include "../../../include/string.h"
 #include "vm.h"
 #include "vma.h"
 #define PAGE_MASK (0x3FF)
@@ -126,7 +127,7 @@ int munmap(void *start, size_t length)
     {
         return -1;
     }
-
+    memset(start, 0, end-(uint64)start);
     uint64 pgtbl = VP(current->mm->satp & ~PAGE_MASK);
     free_page_tables(pgtbl, (uint64)start, n, 1);
     
@@ -136,7 +137,6 @@ int munmap(void *start, size_t length)
     {
         vma_split((uint64)start);   //[vm_start, vm_end) --> [vm_start, start) [start, vm_end)
         vma_split(end);     //[start, vm_end) --> [start, end) [end, vm_end)
-        //vma_delete(vma_find(start)->vm_start);
         vma_delete(ptr_start->vm_next->vm_start);
         return 0;
     }

@@ -20,7 +20,8 @@ static void copy_mm(struct task_struct *child)
     pgtbl = kmalloc(PAGE_SIZE);
     child->mm->satp = (PP(pgtbl)>>12)|MODE_SV39; //新开页表
     kernel_mapping((uint64 *)pgtbl);    //映射kernel部分，按理来说是复制父进程的？这样子没有考虑kernel部分的映射发生改变的情况，也就是第一个TA说的。
-    copy_mmap(child);//复制
+    //copy_mmap(child);//复制
+    vma_copy(child->mm);
 }
 
 static void copy_mmap(struct task_struct *child)
