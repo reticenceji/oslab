@@ -14,7 +14,7 @@ static void init_epc0();
 void task_init(void)
 {
     print("task init...\n");
-    current = (struct task_struct*)(KERNEL_TASK_START_V);
+    current = (struct task_struct*)alloc_pages(1);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
@@ -31,10 +31,10 @@ void task_init(void)
     {
         uint64 pgtbl = alloc_pages(1);
 
-        task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
+        task[i] = (struct task_struct*)alloc_pages(1);
         task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
-        vma_insert(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
+        task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
         vma_insert(task[i]->mm, (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
@@ -62,10 +62,10 @@ void task_init(void)
     {        
         uint64 pgtbl = alloc_pages(1);
 
-        task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
+        task[i] = (struct task_struct*)alloc_pages(1);
         task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
-        vma_insert(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
+        task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
         vma_insert(task[i]->mm, (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
