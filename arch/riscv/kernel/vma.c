@@ -27,31 +27,25 @@ struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t lengt
     return new_node;
 }
 
-struct vm_area_struct *vma_copy(struct mm_struct *mm)
+void vma_copy(struct mm_struct *new_mm)
 {
-    if (mm->mmap == NULL)
+    struct vm_area_struct *copied_mmap = current->mm->mmap;
+    struct vm_area_struct *ptr_move = new_mm->mmap;
+    while (copied_mmap)
     {
-        return NULL;
-    }
-    struct vm_area_struct *mmap = current->mm->mmap;
-    struct vm_area_struct *new_mmap = NULL;
-    struct vm_area_struct *ptr_move = NULL;
-    while (mmap)
-    {
-        if (new_mmap == NULL)
+        if (new_mm->mmap == NULL)
         {
-            new_mmap = vma_build(mm, mmap->vm_start, mmap->vm_end-mmap->vm_start, mmap->vm_flags);
-            ptr_move = new_mmap;
+            new_mm->mmap = vma_build(new_mm, copied_mmap->vm_start, copied_mmap->vm_end, copied_mmap->vm_flags);
+            ptr_move = new_mm->mmap;
         }
         else
         {
-            ptr_move->vm_next = vma_build(mm, mmap->vm_start, mmap->vm_end-mmap->vm_start, mmap->vm_flags);
+            ptr_move->vm_next = vma_build(new_mm, copied_mmap->vm_start, copied_mmap->vm_end, copied_mmap->vm_flags);
             ptr_move->vm_next->vm_prev = ptr_move;
-            mmap = mmap->vm_next;
+            ptr_move = ptr_move->vm_next;
         }
-        mmap = mmap->vm_next;
+        copied_mmap = copied_mmap->vm_next;
     }
-    return new_mmap;
 }
 
 
