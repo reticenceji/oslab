@@ -48,9 +48,6 @@
 #define KERNEL_TASK_START_P 0x80010000
 #define KERNEL_TASK_START_V (KERNEL_TASK_START_P + KERNEL_START_V - KERNEL_START_P)
 #define KERNEL_TASK_SIZE (1 * PAGE_SIZE)
-// 可以认为这一部分是mm_struct的slab
-#define MM_SIZE (1 * REG_SIZE)
-#define MM_START_V (KERNEL_TASK_START_V + NR_TASKS * KERNEL_TASK_SIZE)
 
 //lab5的用户进程的物理地址，本来应该是由kernel分配的
 #define USER_TASK_START_P (0x84000000)

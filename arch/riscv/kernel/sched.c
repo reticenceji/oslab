@@ -17,7 +17,7 @@ void task_init(void)
     current = (struct task_struct*)(KERNEL_TASK_START_V);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
-    task[0]->mm = (struct mm_struct*)(MM_START_V);
+    task[0]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
     task[0]->mm->satp = get_kernel_satp();
     task[0]->counter = 0;
     task[0]->priority = 5;
@@ -32,9 +32,10 @@ void task_init(void)
         uint64 pgtbl = alloc_pages(1);
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
-        task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
-
+        task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
+        vma_insert(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
+        vma_insert(task[i]->mm, (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
         create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
@@ -62,9 +63,10 @@ void task_init(void)
         uint64 pgtbl = alloc_pages(1);
 
         task[i] = (struct task_struct*)(KERNEL_TASK_START_V + i*TASK_SIZE);
-        task[i]->mm = (struct mm_struct*)(MM_START_V + i*MM_SIZE);
-
+        task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
+        vma_insert(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
+        vma_insert(task[i]->mm, (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
         create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
                         USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
         create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
