@@ -23,6 +23,7 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
             ret0 = munmap ((void *) regs[REG_A0], (size_t) REG_A1);
             break;
         case SYS_FORK:
+            memmove(current->stack,regs,PT_REGS_SIZE);
             ret0 = fork();
             break;
         case SYS_MMAP:
@@ -40,7 +41,6 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
     case EX_INSTRUCTION_PF:
     case EX_LOAD_PF:
     case EX_STORE_PF:
-        memmove(current->stack,regs,PT_REGS_SIZE);
         do_page_fault(regs);
         break;
     default:

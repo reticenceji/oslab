@@ -15,9 +15,11 @@ extern void ret_from_fork(uint64 *stack);
  */
 static void copy_mm(struct task_struct *child)
 {
+    uint64 pgtbl;
     child->mm = (struct mm_struct *)kmalloc(sizeof(struct mm_struct));
-    child->mm->satp = (PP((uint64)kmalloc(PAGE_SIZE))>>12)|MODE_SV39; //新开页表
-    kernel_mapping((uint64 *)child->mm->satp);    //映射kernel部分，按理来说是复制父进程的？这样子没有考虑kernel部分的映射发生改变的情况，也就是第一个TA说的。
+    pgtbl = kmalloc(PAGE_SIZE);
+    child->mm->satp = (PP(pgtbl)>>12)|MODE_SV39; //新开页表
+    kernel_mapping((uint64 *)pgtbl);    //映射kernel部分，按理来说是复制父进程的？这样子没有考虑kernel部分的映射发生改变的情况，也就是第一个TA说的。
     copy_mmap(child);//复制
 }
 
@@ -44,11 +46,14 @@ pid_t fork()
     struct task_struct *child_ts;
     child_ts =  dup_task_struct(current);
     copy_mm(child_ts);
+    child_ts->stack = kmalloc(PT_REGS_SIZE);
+    memmove(child_ts->stack,current->stack,PT_REGS_SIZE);
     /* 复制用户空间的内容
      * 代码段、数据段不用，写死在0x84000000，不管他? 这个需要吗？
      * 堆栈需要另外开一段，并且复制parent堆栈的内容。并且我们需要保存他在task——struct的某个地方。
      * 创建页表
      */
+    task[child_ts->pid] = child_ts;
     return child_ts->pid;
 }
 

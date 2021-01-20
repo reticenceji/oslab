@@ -194,11 +194,11 @@ void schedule(void)
         print("[!] Switch from task %l [task struct:0x%X, sp:0x%X] to task %l [task struct:0x%X, sp:0x%X], prio: %l, counter: %l\n", current->pid, current, current->thread.sp ,task[next]->pid, task[next], task[next]->thread.sp,task[next]->priority, task[next]->counter);
 }
 
-	print("tasks' priority changed\n");
+	// print("tasks' priority changed\n");
     for( int i=1; i < NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
     {
         task[i]->priority = rand();
-        //print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
+        // print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
     }
     switch_to(task[next]);                      //切换到新任务
     #endif
@@ -261,5 +261,6 @@ pid_t newpid()
         mask <<= 1;
         pid++;
     }
+    pid_bitmap |= mask;
     return pid;
 }
