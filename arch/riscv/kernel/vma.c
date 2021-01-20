@@ -2,6 +2,7 @@
 #include "vma.h"
 #include "slub.h"
 #include "../../../include/stddef.h"
+/* 找到va所在vma并返回, 若找不到返回NULL */
 struct vm_area_struct *vma_find(uint64 va)
 {
     struct vm_area_struct *ptr = current->mm->mmap;
@@ -14,9 +15,10 @@ struct vm_area_struct *vma_find(uint64 va)
     return ptr;
 }
 
+/* 建立vma结点, 包括为其分配内存 */
 struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t length, int prot)
 {
-    struct vm_area_struct *new_node = (struct vm_area_struct *)kmalloc(VMA_SIZE);
+    struct vm_area_struct *new_node = (struct vm_area_struct *)kmalloc(sizeof(struct vm_area_struct));
     new_node->vm_start = (uint64)start;
     new_node->vm_end = (uint64)start + length;
     new_node->vm_mm = mm;
@@ -27,6 +29,7 @@ struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t lengt
     return new_node;
 }
 
+/* 复制与current->mm->mmap内容一样的链表 */
 void vma_copy(struct mm_struct *new_mm)
 {
     struct vm_area_struct *copied_mmap = current->mm->mmap;
@@ -48,11 +51,17 @@ void vma_copy(struct mm_struct *new_mm)
     }
 }
 
-
+/* 插入vma结点, 地址保证递增顺序 */
 int vma_insert(struct mm_struct *mm, void *start, size_t length, int prot)
 {
     struct vm_area_struct *ptr = current->mm->mmap;
     struct vm_area_struct *node = vma_build(mm, start, length, prot);
+
+    if (ptr == NULL)
+    {
+        current->mm->mmap = node;
+        return 0;
+    }
 
     if (node->vm_end <= ptr->vm_start)
     {
@@ -88,6 +97,11 @@ int vma_insert(struct mm_struct *mm, void *start, size_t length, int prot)
 int vma_delete(uint64 va)
 {
     struct vm_area_struct *ptr = current->mm->mmap;
+
+    if (ptr == NULL)
+    {
+        return -1;
+    }
     if (ptr->vm_start <= va && va < ptr->vm_end)
     {
         current->mm->mmap = ptr->vm_next;
@@ -128,6 +142,10 @@ int vma_delete(uint64 va)
 int vma_split(uint64 va)
 {
     struct vm_area_struct *ptr = current->mm->mmap;
+    if (ptr == NULL)
+    {
+        return -1;
+    }
     if (ptr->vm_start < va && va < ptr->vm_end)
     {
         struct vm_area_struct *new_node = vma_build(ptr->vm_mm, ptr->vm_start,
