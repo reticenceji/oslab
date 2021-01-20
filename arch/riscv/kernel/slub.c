@@ -164,6 +164,7 @@ void *cache_create(const char *name, size_t size,
     s->nr_partial = 0;
 
     s->tid = cache_tid++;
+    print("[S] Create New cache: name:slub-objectsize-%d\tsize: 0x%X, align: 0x%X\n",s->size,s->size,s->align);
     return s;
 }
 
@@ -315,6 +316,8 @@ void *kmalloc(size_t size)
         if(size<=kmem_cache_objsize[objindex])
         {
             p=kmem_cache_alloc(slub_allocator[objindex]);
+            print("[S] kmem_cache_alloc: name: %s\n",kmem_cache_name[objindex]);
+            print("addr: %X, partial_obj_count: 1\n",p);
             break;
         }
     }
@@ -326,7 +329,7 @@ void *kmalloc(size_t size)
         set_page_attr(p, (size-1) / PAGE_SIZE, PAGE_BUDDY);
     }
 
-        return p;
+    return p;
 }
 
 void kfree(const void *addr)

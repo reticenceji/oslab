@@ -68,7 +68,10 @@ void *alloc_pages(int size) {
     }
     /* 算出在大页表里的偏移 */
     if (__is_page_open())
+    {
         va = OFFSET2VA( (index + 1) * node_size - buddy_system.size);
+        print("[S] Buddy allocate addr: 0x%X\n",va);
+    }
     else
         va = OFFSET2PA( (index + 1) * node_size - buddy_system.size);
     
@@ -78,7 +81,6 @@ void *alloc_pages(int size) {
         index = PARENT(index);
         buddy_system.bitmap[index] = MAX(buddy_system.bitmap[LEFT_LEAF(index)],buddy_system.bitmap[RIGHT_LEAF(index)]);
     }
-
     return va;
 }
 
