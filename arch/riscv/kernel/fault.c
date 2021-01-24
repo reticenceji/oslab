@@ -26,10 +26,10 @@ void do_page_fault(uintptr_t *regs)
         if (current->pid >1) 
         {
             sp = kmalloc(PAGE_SIZE);
-            create_mapping(current->mm->satp, stval & ~PAGE_MASK, sp, PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
+            create_mapping(current->mm->satp, stval & ~PAGE_MASK, PP(sp), PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
         }
         else
-            create_mapping(current->mm->satp, stval & ~PAGE_MASK, current->user_sp, PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
+            create_mapping(current->mm->satp, stval & ~PAGE_MASK, PP(current->user_sp), PAGE_SIZE, FLAG_R|FLAG_V|FLAG_U);
         return;
     }
     if (scause == EX_STORE_PF && vma->vm_flags & VM_WRITE) 
@@ -38,10 +38,10 @@ void do_page_fault(uintptr_t *regs)
         if (current->pid >1) 
         {
             sp = kmalloc(PAGE_SIZE);
-            create_mapping(current->mm->satp, stval & ~PAGE_MASK, sp, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
+            create_mapping(current->mm->satp, stval & ~PAGE_MASK, PP(sp), PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
         }
         else
-            create_mapping(current->mm->satp, stval & ~PAGE_MASK, current->user_sp, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
+            create_mapping(current->mm->satp, stval & ~PAGE_MASK, PP(current->user_sp), PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
         return;
     }
     if (scause == EX_INSTRUCTION_PF && vma->vm_flags & VM_EXEC) 
