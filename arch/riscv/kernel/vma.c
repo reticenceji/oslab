@@ -2,6 +2,7 @@
 #include "vma.h"
 #include "slub.h"
 #include "../../../include/stddef.h"
+#include <sched.h>
 /* 找到va所在vma并返回, 若找不到返回NULL */
 struct vm_area_struct *vma_find(uint64 va)
 {
@@ -16,7 +17,7 @@ struct vm_area_struct *vma_find(uint64 va)
 }
 
 /* 建立vma结点, 包括为其分配内存 */
-struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t length, int prot)
+static struct vm_area_struct *vma_build(struct mm_struct *mm, void *start, size_t length, int prot)
 {
     struct vm_area_struct *new_node = (struct vm_area_struct *)kmalloc(sizeof(struct vm_area_struct));
     new_node->vm_start = (uint64)start;
@@ -52,14 +53,14 @@ void vma_copy(struct mm_struct *new_mm)
 }
 
 /* 插入vma结点, 地址保证递增顺序 */
-int vma_insert(struct mm_struct *mm, void *start, size_t length, int prot)
+int vma_insert(struct task_struct *tsk, void *start, size_t length, int prot)
 {
-    struct vm_area_struct *ptr = current->mm->mmap;
-    struct vm_area_struct *node = vma_build(mm, start, length, prot);
+    struct vm_area_struct *ptr = tsk->mm->mmap;
+    struct vm_area_struct *node = vma_build(tsk->mm, start, length, prot);
 
     if (ptr == NULL)
     {
-        current->mm->mmap = node;
+        tsk->mm->mmap = node;
         return 0;
     }
 
@@ -67,7 +68,7 @@ int vma_insert(struct mm_struct *mm, void *start, size_t length, int prot)
     {
         node->vm_next = ptr;
         ptr->vm_prev = node;
-        current->mm->mmap = node;
+        tsk->mm->mmap = node;
         return 0;
     }
     while (ptr->vm_next != NULL)

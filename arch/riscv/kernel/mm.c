@@ -2,6 +2,7 @@
 #include "../../../include/string.h"
 #include "vm.h"
 #include "vma.h"
+#include <sched.h>
 #define PAGE_MASK (0x3FF)
 #define FLAG2PAGE_PROT(FLAG) (((FLAG)&0x7)>>1)
 
@@ -32,7 +33,7 @@ static inline void edit_vma(uint64 start,uint64 end,int protection)
     uint64 tmp_end;
     vma = vma_find(start);
     if (vma->vm_start != start) 
-        vma_insert(current->mm, vma->vm_start, start - vma->vm_start, protection);
+        vma_insert(current, vma->vm_start, start - vma->vm_start, protection);
     while (1)
     {
         tmp_end = vma->vm_end;
@@ -40,10 +41,10 @@ static inline void edit_vma(uint64 start,uint64 end,int protection)
         vma_delete(tmp_end-1);
         vma=vma_find(tmp_end);
     }
-    vma_insert(current->mm, start, end-start, protection);
+    vma_insert(current, start, end-start, protection);
 
     if (vma->vm_end != tmp_end)
-        vma_insert(current->mm, end, vma->vm_end-end,protection);
+        vma_insert(current, end, vma->vm_end-end,protection);
 }
 
 /* 从va_start到va_end的每一个页表项都执行func的操作 */
@@ -185,12 +186,12 @@ static void *do_mmap(struct mm_struct *mm, void *start, size_t length, int prot)
     if(flag)
     {
         addr_suggest=(uint64*)get_unmapped_area(length);
-        vma_insert(mm,addr_suggest,length,prot);
+        vma_insert(current,addr_suggest,length,prot);
         return addr_suggest;
     }
     else 
     {
-        vma_insert(mm,start,length,prot);
+        vma_insert(current,start,length,prot);
         return start;
     }
 }
