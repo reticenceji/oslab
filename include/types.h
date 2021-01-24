@@ -1,4 +1,4 @@
-typedef unsigned int   uint;
+typedef unsigned long   uint;
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
 typedef unsigned long  uintptr_t;
