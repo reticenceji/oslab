@@ -172,6 +172,12 @@ __is_page_open:
 	srli a0,a0,60 
 	ret
 
+.globl __get_sscratch
+.type __get_sscratch,@function
+__get_sscratch:
+	csrr a0,sscratch
+	ret
+
 #第一个参数 a0 stack
 .globl ret_from_fork
 .type ret_from_fork,@function
