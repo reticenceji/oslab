@@ -1,0 +1,108 @@
+make -s && qemu-system-riscv64 -nographic -machine virt -kernel vmlinux -initrd hello.bin
+[S] Buddy allocate addr: 0xffffffe000080000
+[S] Buddy allocate addr: 0xffffffe000050000
+[S] Create New cache: name:slub-objectsize-8	size: 0x8, align: 0x8
+[S] Buddy allocate addr: 0xffffffe00004c000
+[S] Create New cache: name:slub-objectsize-16	size: 0x10, align: 0x8
+[S] Buddy allocate addr: 0xffffffe000060000
+[S] Create New cache: name:slub-objectsize-32	size: 0x20, align: 0x8
+[S] Buddy allocate addr: 0xffffffe000064000
+[S] Create New cache: name:slub-objectsize-64	size: 0x40, align: 0x8
+[S] Buddy allocate addr: 0xffffffe000068000
+[S] Create New cache: name:slub-objectsize-128	size: 0x80, align: 0x8
+[S] Buddy allocate addr: 0xffffffe00006c000
+[S] Create New cache: name:slub-objectsize-256	size: 0x100, align: 0x8
+[S] Buddy allocate addr: 0xffffffe000070000
+[S] Create New cache: name:slub-objectsize-512	size: 0x200, align: 0x8
+[S] Buddy allocate addr: 0xffffffe000074000
+[S] Create New cache: name:slub-objectsize-1024	size: 0x400, align: 0x8
+[S] Buddy allocate addr: 0xffffffe000078000
+[S] Create New cache: name:slub-objectsize-2048	size: 0x800, align: 0x8
+[S] Buddy allocate addr: 0xffffffe00007c000
+ZJU OS LAB 6             GROUP-G10
+task init...
+[S] Buddy allocate addr: 0xffffffe0000c0000
+[S] kmem_cache_alloc: name: slub-objectsize-16  
+addr: ffffffe000060000, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-512 
+addr: ffffffe000074000, partial_obj_count: 1
+[S] Buddy allocate addr: 0xffffffe0000c1000
+[S] Buddy allocate addr: 0xffffffe0000c2000
+[S] kmem_cache_alloc: name: slub-objectsize-16  
+addr: ffffffe000060010, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-64  
+addr: ffffffe000068000, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-64  
+addr: ffffffe000068040, partial_obj_count: 1
+[S] Buddy allocate addr: 0xffffffe0000c3000
+[S] Buddy allocate addr: 0xffffffe0000c4000
+[S] Buddy allocate addr: 0xffffffe0000c5000
+[S] Buddy allocate addr: 0xffffffe0000c6000
+[S] Buddy allocate addr: 0xffffffe0000c7000
+[S] Buddy allocate addr: 0xffffffe0000c8000
+[S] Buddy allocate addr: 0xffffffe0000c9000
+[S] Buddy allocate addr: 0xffffffe0000ca000
+[S] Buddy allocate addr: 0xffffffe0000cb000
+[S] Buddy allocate addr: 0xffffffe0000cc000
+[S] Buddy allocate addr: 0xffffffe0000cd000
+[S] kmem_cache_alloc: name: slub-objectsize-512 
+addr: ffffffe000074200, partial_obj_count: 1
+[!] Switch from task 0 [task struct:0xffffffe0000c0000, sp:0xffffffe0000c1000] to task 1 [task struct:0xffffffe0000c2000, sp:0xffffffdf80000000], prio: 5, counter: 7
+[S] PAGE_FAULT: PID = 1
+[S] PAGE_FAULT: scause: 15, sepc: 0xffffffe0000018ac, badaddr: 0xffffffdf7ffffff8
+[S] Buddy allocate addr: 0xffffffe0000ce000
+[S] Buddy allocate addr: 0xffffffe0000cf000
+[S] Buddy allocate addr: 0xffffffe0000d0000
+[S] PAGE_FAULT: PID = 1
+[S] PAGE_FAULT: scause: 12, sepc: 0x0, badaddr: 0x0
+[S] Buddy allocate addr: 0xffffffe0000d1000
+[S] Buddy allocate addr: 0xffffffe0000d2000
+[S] Buddy allocate addr: 0xffffffe0000d3000
+[S] Buddy allocate addr: 0xffffffe0000d4000
+[S] kmem_cache_alloc: name: slub-objectsize-16  
+addr: ffffffe000060020, partial_obj_count: 1
+[S] Buddy allocate addr: 0xffffffe0000d5000
+[S] Buddy allocate addr: 0xffffffe0000d6000
+[S] Buddy allocate addr: 0xffffffe0000d7000
+[S] Buddy allocate addr: 0xffffffe0000d8000
+[S] Buddy allocate addr: 0xffffffe0000d9000
+[S] Buddy allocate addr: 0xffffffe0000da000
+[S] Buddy allocate addr: 0xffffffe0000db000
+[S] Buddy allocate addr: 0xffffffe0000dc000
+[S] Buddy allocate addr: 0xffffffe0000dd000
+[S] Buddy allocate addr: 0xffffffe0000de000
+[S] Buddy allocate addr: 0xffffffe0000df000
+[S] Buddy allocate addr: 0xffffffe0000e0000
+[S] kmem_cache_alloc: name: slub-objectsize-64  
+addr: ffffffe000068080, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-64  
+addr: ffffffe0000680c0, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-512 
+addr: ffffffe000074400, partial_obj_count: 1
+[PID = 2] Process fork from [PID = 1] Successfully! counter = 7
+[S] Buddy allocate addr: 0xffffffe0000e1000
+[S] Buddy allocate addr: 0xffffffe0000e2000
+[S] kmem_cache_alloc: name: slub-objectsize-16  
+addr: ffffffe000060030, partial_obj_count: 1
+[S] Buddy allocate addr: 0xffffffe0000e3000
+[S] Buddy allocate addr: 0xffffffe0000e4000
+[S] Buddy allocate addr: 0xffffffe0000e5000
+[S] Buddy allocate addr: 0xffffffe0000e6000
+[S] Buddy allocate addr: 0xffffffe0000e7000
+[S] Buddy allocate addr: 0xffffffe0000e8000
+[S] Buddy allocate addr: 0xffffffe0000e9000
+[S] Buddy allocate addr: 0xffffffe0000ea000
+[S] Buddy allocate addr: 0xffffffe0000eb000
+[S] Buddy allocate addr: 0xffffffe0000ec000
+[S] Buddy allocate addr: 0xffffffe0000ed000
+[S] Buddy allocate addr: 0xffffffe0000ee000
+[S] kmem_cache_alloc: name: slub-objectsize-64  
+addr: ffffffe000068100, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-64  
+addr: ffffffe000068140, partial_obj_count: 1
+[S] kmem_cache_alloc: name: slub-objectsize-512 
+addr: ffffffe000074600, partial_obj_count: 1
+[PID = 3] Process fork from [PID = 1] Successfully! counter = 7
+[User] pid: 1, sp is ffffffdf7fffffd0
+QEMU: Terminated
+

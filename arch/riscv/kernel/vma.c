@@ -39,12 +39,12 @@ void vma_copy(struct mm_struct *new_mm)
     {
         if (new_mm->mmap == NULL)
         {
-            new_mm->mmap = vma_build(new_mm, copied_mmap->vm_start, copied_mmap->vm_end, copied_mmap->vm_flags);
+            new_mm->mmap = vma_build(new_mm, copied_mmap->vm_start, copied_mmap->vm_end - copied_mmap->vm_start, copied_mmap->vm_flags);
             ptr_move = new_mm->mmap;
         }
         else
         {
-            ptr_move->vm_next = vma_build(new_mm, copied_mmap->vm_start, copied_mmap->vm_end, copied_mmap->vm_flags);
+            ptr_move->vm_next = vma_build(new_mm, copied_mmap->vm_start, copied_mmap->vm_end - copied_mmap->vm_start, copied_mmap->vm_flags);
             ptr_move->vm_next->vm_prev = ptr_move;
             ptr_move = ptr_move->vm_next;
         }
