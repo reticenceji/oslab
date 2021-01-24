@@ -49,7 +49,7 @@ void do_page_fault(uintptr_t *regs)
     if (scause == EX_INSTRUCTION_PF && vma->vm_flags & VM_EXEC) 
     {
         //在我们的实验中，执行错误就把它映射到程序装载的地方
-        create_mapping(page_base, stval & ~0xFFF, 0x84000000, PAGE_SIZE, FLAG_R|FLAG_X|FLAG_V|FLAG_U);
+        create_mapping(page_base, stval & ~0xFFF, 0x84000000, PAGE_SIZE, FLAG_W|FLAG_R|FLAG_X|FLAG_V|FLAG_U);
         return;
     }
     print("Invalid vm area in page fault\n");

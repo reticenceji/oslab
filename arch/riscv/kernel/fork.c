@@ -55,6 +55,7 @@ pid_t fork()
      * 创建页表
      */
     task[child_ts->pid] = child_ts;
+    print("[PID = %d] Process fork from [PID = %d] Successfully! counter = %d\n",child_ts->pid,current->pid,current->counter);
     return child_ts->pid;
 }
 
