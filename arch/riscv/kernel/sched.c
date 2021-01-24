@@ -3,6 +3,7 @@
 #include "../../../include/rand.h"
 #include "put.h"
 #include "slub.h"
+#include "buddy.h"
 #define INF 1e9
 struct task_struct *current;
 struct task_struct *task[NR_TASKS];
@@ -18,7 +19,7 @@ void task_init(void)
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
-    task[0]->mm->satp = get_kernel_satp();
+    task[0]->mm->satp = (uint64)get_kernel_satp();
     task[0]->counter = 0;
     task[0]->priority = 5;
     task[0]->blocked = 0;
@@ -29,17 +30,13 @@ void task_init(void)
     #ifdef SJF
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {
-        uint64 pgtbl = alloc_pages(1);
+        uint64 pgtbl = (uint64)alloc_pages(1);
 
         task[i] = (struct task_struct*)alloc_pages(1);
         task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
         vma_insert(task[i]->mm, (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
-        create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
-                        USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
-                        USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
         kernel_mapping((uint64*)pgtbl);
 
         task[i]->state = TASK_RUNNING;
@@ -60,17 +57,14 @@ void task_init(void)
     #ifdef PRIORITY
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {        
-        uint64 pgtbl = alloc_pages(1);
+        uint64 pgtbl = (uint64)alloc_pages(1);
 
         task[i] = (struct task_struct*)alloc_pages(1);
         task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
-        task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
-        vma_insert(task[i]->mm, (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
-        create_mapping((uint64*)pgtbl, USER_TASK_START_V, USER_TASK_START_P,
-                        USER_TASK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_X|FLAG_V);
-        create_mapping((uint64*)pgtbl, USER_STACK_TOP_V,  USER_STACK_BOTTOM_P-i*USER_STACK_SIZE,
-                        USER_STACK_SIZE, FLAG_U|FLAG_R|FLAG_W|FLAG_V);
+        //task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, (int)(VM_WRITE|VM_READ|VM_EXEC));
+        vma_insert(task[i], (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
+
         kernel_mapping((uint64*)pgtbl);
 
         task[i]->state = TASK_RUNNING;
