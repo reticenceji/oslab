@@ -37,6 +37,7 @@ void task_init(void)
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         //task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
         vma_insert(task[i], (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
+        vma_insert(task[i], (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_READ|VM_EXEC);
         kernel_mapping((uint64*)pgtbl);
 
         task[i]->state = TASK_RUNNING;
@@ -64,7 +65,7 @@ void task_init(void)
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         //task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, (int)(VM_WRITE|VM_READ|VM_EXEC));
         vma_insert(task[i], (void *)USER_STACK_TOP_V,USER_STACK_SIZE, VM_WRITE|VM_READ);
-
+        vma_insert(task[i], (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_READ|VM_EXEC);
         kernel_mapping((uint64*)pgtbl);
 
         task[i]->state = TASK_RUNNING;
