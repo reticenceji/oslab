@@ -205,7 +205,6 @@ ret_from_fork:
 	ld x13,0xb0(a0)
 	ld x12,0xb8(a0)
 	ld x11,0xc0(a0)
-	ld x10,0xc8(a0)
 	ld x9,0xd0(a0)
 	ld x8,0xd8(a0)
 	ld x7,0xe0(a0)
@@ -215,6 +214,7 @@ ret_from_fork:
 	ld x3,0x100(a0)
 	ld x2,0x108(a0)
 	ld x1,0x110(a0)
+	ld x10,0xc8(a0)		#x10就是a0
 
 	csrrw sp,sscratch,sp
 	mv a0,zero		#对于子进程fork返回0
