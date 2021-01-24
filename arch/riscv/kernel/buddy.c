@@ -12,8 +12,8 @@
 extern uint64 _start ;
 extern uint64 _end;
 static struct buddy buddy_system;
-static int bitmap[(KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/PAGE_SIZE*2];
-static inline fixsize(int size);
+static int bitmap[(KERNEL_SIZE)/PAGE_SIZE*2];
+static inline int fixsize(int size);
 static void init_bitmap(int index,int size);
 
 /* 把size对齐到2^n */
@@ -41,7 +41,7 @@ static void init_bitmap(int index,int size)
 
 void init_buddy_system(void)
 {   
-    buddy_system.size = (KERNEL_SIZE + KERNEL_ALLOCABLE_SIZE)/ PAGE_SIZE; 
+    buddy_system.size = (KERNEL_SIZE)/ PAGE_SIZE; 
     buddy_system.bitmap = bitmap;
     init_bitmap(0,buddy_system.size);
     //把kernel的代码标记为已经分配
@@ -81,7 +81,7 @@ void *alloc_pages(int size) {
         index = PARENT(index);
         buddy_system.bitmap[index] = MAX(buddy_system.bitmap[LEFT_LEAF(index)],buddy_system.bitmap[RIGHT_LEAF(index)]);
     }
-    return va;
+    return (void*)va;
 }
 
 void free_pages(void* va)
