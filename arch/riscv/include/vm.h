@@ -68,7 +68,8 @@
 
 /* 页表模式SV39 */
 #define MODE_SV39 0x8000000000000000
-
+#define SATP2PGTBL(SATP) (((SATP) & 0x3FFFFF)<<12)
+#define PGTBL2SATP(PGTBL) ((PGTBL)>>12 | MODE_SV39)
 /* 循环队列实现物理内存管理 */
 typedef struct frame_queue
 {

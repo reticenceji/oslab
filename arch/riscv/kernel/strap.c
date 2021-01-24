@@ -36,6 +36,7 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
         default:
             break;
         }
+        sepc += 4;
         regs[REG_A0] = ret0;    //返回值通过a0传递
         break;
     case EX_INSTRUCTION_PF:
@@ -46,7 +47,6 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
     default:
         break;
     }
-    sepc += 4;
     regs[CSR_SEPC] = sepc;
     return;
 }
