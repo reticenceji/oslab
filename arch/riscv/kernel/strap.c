@@ -24,10 +24,10 @@ void handler_s(size_t scause, size_t sepc, uintptr_t *regs)
             break;
         case SYS_FORK:
             memmove(current->stack,regs,PT_REGS_SIZE);
-            ret0 = fork();
+            ret0 = (uint64)fork();
             break;
         case SYS_MMAP:
-            ret0 = mmap ((void *)regs[REG_A0], (size_t)regs[REG_A1], (int) regs[REG_A2],
+            ret0 = (uint64)mmap ((void *)regs[REG_A0], (size_t)regs[REG_A1], (int) regs[REG_A2],
                    (int)regs[REG_A3], (int)regs[REG_A4] , (__off_t) regs[REG_A5]);
             break;
         case SYS_MPROTECT:
