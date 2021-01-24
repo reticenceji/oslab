@@ -183,6 +183,7 @@ __get_sscratch:
 .type ret_from_fork,@function
 ret_from_fork:
 	ld t0,0x0(a0)
+	add t0,t0,4
 	csrw sepc,t0
 	ld t0,0x8(a0)
 	csrw stval,t0
@@ -222,6 +223,7 @@ ret_from_fork:
 	ld sp,0x110(a0)
 	ld x10,0xc8(a0)		#x10就是a0
 
+	add sp,sp,0x118
 	csrrw sp,sscratch,sp
 	mv a0,zero		#对于子进程fork返回0
 	sret

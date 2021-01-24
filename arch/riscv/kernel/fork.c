@@ -30,7 +30,7 @@ static struct task_struct* dup_task_struct (struct task_struct *current)
     memmove(child,current,TASK_SIZE);   //string.h里给的，能用吗，还是要自己写一个？
     child->pid = newpid();//可以给pid创建一个bitmap标记使用
     child->user_sp = kmalloc(PAGE_SIZE);  //user stack
-    memmove(child->user_sp,current->stack,PAGE_SIZE);
+    memmove(child->user_sp,USER_STACK_TOP_V,PAGE_SIZE);
     child->thread.sp = (uint64)child+PAGE_SIZE; //kernel stack
     child->sscratch = __get_sscratch();
     child->thread.ra = (uint64)fork_ret;
