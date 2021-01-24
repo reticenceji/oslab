@@ -1,6 +1,6 @@
 #include "vm.h"
 #include "put.h"
-
+#include "buddy.h"
 extern uint64 text_start;
 extern uint64 text_end;
 extern uint64 rodata_start;
@@ -79,7 +79,7 @@ __attribute__((optimize("O0"))) void paging_init()
     create_mapping(pgtbl, VP((uint64)&data_start) , (uint64)&data_start, (uint64)&data_end - (uint64)&data_start, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, VP((uint64)&bss_start), (uint64)&bss_start, (uint64)&bss_end - (uint64)&bss_start, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, VP((uint64)&other_start), (uint64)&other_start, KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
-    create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
+    //create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 }
 
@@ -90,7 +90,7 @@ __attribute__((optimize("O0"))) void kernel_mapping(uint64 *pgtbl)
     create_mapping(pgtbl, (uint64)&data_start, PP((uint64)&data_start), (uint64)&data_end - (uint64)&data_start, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, (uint64)&bss_start, PP((uint64)&bss_start), (uint64)&bss_end - (uint64)&bss_start, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, (uint64)&other_start, PP((uint64)&other_start), KERNEL_SIZE-((uint64)&other_start-(uint64)&text_start), FLAG_R|FLAG_W|FLAG_V);
-    create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
+    //create_mapping(pgtbl, KERNEL_ALLOCABLE_START_V, KERNEL_ALLOCABLE_START_P, KERNEL_ALLOCABLE_SIZE, FLAG_R|FLAG_W|FLAG_V);
     create_mapping(pgtbl, UART_START_V, UART_START_P, UART_SIZE, FLAG_R|FLAG_W|FLAG_X|FLAG_V);
 }
 
@@ -115,7 +115,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
         vpn2 = (va >> 30) & 0x1FF;
         if (pgtbl[vpn2] == 0)
         {
-            addr_pud = alloc_pages(1);
+            addr_pud = (uint64)alloc_pages(1);
             add_entry((uint64)pgtbl, vpn2, flag?PP(addr_pud):addr_pud, FLAG_V);
         }
         else
@@ -131,7 +131,7 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
             vpn1 = (va >> 21) & 0x1FF;
             if ( ((uint64 *)addr_pud)[vpn1] == 0 )
             {
-                addr_pmd = alloc_pages(1);
+                addr_pmd = (uint64)alloc_pages(1);
                 add_entry(addr_pud, vpn1, flag?PP(addr_pmd):addr_pmd, FLAG_V);
             }
             else
@@ -163,5 +163,5 @@ __attribute__((optimize("O0"))) void create_mapping(uint64 *pgtbl, uint64 va, ui
 
 uint64* get_kernel_satp()
 {
-    return (MODE_SV39 | ((uint64)pgtbl >> 12));
+    return (uint64*)(MODE_SV39 | ((uint64)pgtbl >> 12));
 }
