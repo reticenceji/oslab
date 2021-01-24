@@ -24,11 +24,6 @@ static void copy_mm(struct task_struct *child)
     vma_copy(child->mm);
 }
 
-static void copy_mmap(struct task_struct *child)
-{
-    vma_copy(child->mm);
-}
-
 static struct task_struct* dup_task_struct (struct task_struct *current)
 {
     struct task_struct *child = (struct task_struct *)kmalloc(TASK_SIZE);
@@ -37,6 +32,7 @@ static struct task_struct* dup_task_struct (struct task_struct *current)
     child->user_sp = kmalloc(PAGE_SIZE);  //user stack
     memmove(child->user_sp,current->stack,PAGE_SIZE);
     child->thread.sp = (uint64)child+PAGE_SIZE; //kernel stack
+    child->sscratch = USER_STACK_BOTTOM_V;
     child->thread.ra = (uint64)fork_ret;
     return child;
 }
