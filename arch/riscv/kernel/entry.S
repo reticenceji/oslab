@@ -212,8 +212,8 @@ ret_from_fork:
 	ld x5,0xf0(a0)
 	ld x4,0xf8(a0)
 	ld x3,0x100(a0)
-	ld x2,0x108(a0)
-	ld x1,0x110(a0)
+	ld ra,0x108(a0)
+	ld sp,0x110(a0)
 	ld x10,0xc8(a0)		#x10就是a0
 
 	csrrw sp,sscratch,sp
