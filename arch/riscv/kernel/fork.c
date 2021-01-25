@@ -8,7 +8,7 @@
 static void copy_mm(struct task_struct *child);
 static void copy_mmap(struct task_struct *child);
 static struct task_struct* dup_task_struct (struct task_struct *current);
-extern void ret_from_fork(uint64 *stack);
+extern void ret_from_fork(uint64 *stack,uint64* kernel_sp);
 
 /* TODO 为子进程创建它的task_struct(包括Stack的整个Page，并修改部分内容。如果创建失败（NR_TASK）返回NULL，否则返回它的地址 
  * stack内容
@@ -58,6 +58,6 @@ pid_t fork()
 /* TODO 主要功能是调用汇编的ret_from_fork */
 void fork_ret()
 {
-    ret_from_fork(current->stack);
+    ret_from_fork(current->stack,current->thread.sp);
     return;
 }

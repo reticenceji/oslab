@@ -52,23 +52,23 @@ Disassembly of section .text.main:
   80:	fea43023          	sd	a0,-32(s0)
   84:	fb5ff0ef          	jal	ra,38 <fork>
   88:	fea43023          	sd	a0,-32(s0)
-  8c:	f79ff0ef          	jal	ra,4 <getpid>
-  90:	00050793          	mv	a5,a0
-  94:	00010713          	mv	a4,sp
-  98:	00070613          	mv	a2,a4
-  9c:	00078593          	mv	a1,a5
-  a0:	73000513          	li	a0,1840
-  a4:	600000ef          	jal	ra,6a4 <printf>
-  a8:	fe042623          	sw	zero,-20(s0)
-  ac:	0100006f          	j	bc <main+0x50>
-  b0:	fec42783          	lw	a5,-20(s0)
-  b4:	0017879b          	addiw	a5,a5,1
-  b8:	fef42623          	sw	a5,-20(s0)
-  bc:	fec42783          	lw	a5,-20(s0)
-  c0:	0007871b          	sext.w	a4,a5
-  c4:	fff00793          	li	a5,-1
-  c8:	fef714e3          	bne	a4,a5,b0 <main+0x44>
-  cc:	fc1ff06f          	j	8c <main+0x20>
+    8c:	f79ff0ef          	jal	ra,4 <getpid>
+    90:	00050793          	mv	a5,a0
+    94:	00010713          	mv	a4,sp
+    98:	00070613          	mv	a2,a4
+    9c:	00078593          	mv	a1,a5
+    a0:	73000513          	li	a0,1840
+    a4:	600000ef          	jal	ra,6a4 <printf>
+    a8:	fe042623          	sw	zero,-20(s0)
+    ac:	0100006f          	j	bc <main+0x50>
+    b0:	fec42783          	lw	a5,-20(s0)
+    b4:	0017879b          	addiw	a5,a5,1
+    b8:	fef42623          	sw	a5,-20(s0)
+    bc:	fec42783          	lw	a5,-20(s0)
+    c0:	0007871b          	sext.w	a4,a5
+    c4:	fff00793          	li	a5,-1
+    c8:	fef714e3          	bne	a4,a5,b0 <main+0x44>
+    cc:	fc1ff06f          	j	8c <main+0x20>
 
 Disassembly of section .text.putchar:
 

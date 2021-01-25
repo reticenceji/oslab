@@ -179,9 +179,13 @@ __get_sscratch:
 	ret
 
 #第一个参数 a0 stack
+#第二个参数 a1 kernel_sp
 .globl ret_from_fork
 .type ret_from_fork,@function
 ret_from_fork:
+	csrr sp,sscratch		#继承父进程的用户栈虚拟地址
+	csrw sscratch,a1		#和父进程有不一样的系统栈地址
+
 	ld t0,0x0(a0)
 	add t0,t0,4
 	csrw sepc,t0
@@ -220,10 +224,9 @@ ret_from_fork:
 	ld x4,0xf8(a0)
 	ld x3,0x100(a0)
 	ld ra,0x108(a0)
-	ld sp,0x110(a0)
-	ld x10,0xc8(a0)		#x10就是a0
+	#ld sp,0x110(a0)
+	#ld x10,0xc8(a0)		#x10就是a0
 
-	csrrw sp,sscratch,sp
 	mv a0,zero		#对于子进程fork返回0
 	sret
 

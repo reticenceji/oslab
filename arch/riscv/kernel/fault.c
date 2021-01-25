@@ -28,7 +28,7 @@ void do_page_fault(uintptr_t *regs)
         if (current->pid ==1) 
         {
             addr = kmalloc(PAGE_SIZE);
-            create_mapping(page_base, stval & ~0xFFF, PP(addr), PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
+            create_mapping(page_base, stval & ~0xFFF, 0x84000000, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
         }
         else
             create_mapping(page_base, stval & ~0xFFF, PP(current->user_sp), PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
@@ -40,7 +40,7 @@ void do_page_fault(uintptr_t *regs)
         if (current->pid ==1) 
         {
             addr = kmalloc(PAGE_SIZE);
-            create_mapping(page_base, stval & ~0xFFF, PP(addr), PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
+            create_mapping(page_base, stval & ~0xFFF, 0x84000000, PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
         }
         else
             create_mapping(page_base, stval & ~0xFFF, PP(current->user_sp), PAGE_SIZE, FLAG_R|FLAG_W|FLAG_V|FLAG_U);
