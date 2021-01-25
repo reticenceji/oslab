@@ -15,7 +15,7 @@ static void init_epc0();
 void task_init(void)
 {
     print("task init...\n");
-    current = (struct task_struct*)alloc_pages(1);
+    current = (struct task_struct*)kmalloc(PAGE_SIZE);
     task[0] = current;
     task[0]->state = TASK_RUNNING;
     task[0]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
@@ -30,9 +30,8 @@ void task_init(void)
     #ifdef SJF
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {
-        uint64 pgtbl = (uint64)alloc_pages(1);
-
-        task[i] = (struct task_struct*)alloc_pages(1);
+        uint64 pgtbl = (uint64)kmalloc(PAGE_SIZE);
+        task[i] = (struct task_struct*)kmalloc(PAGE_SIZE);
         task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         //task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, VM_WRITE|VM_READ|VM_EXEC);
@@ -58,9 +57,9 @@ void task_init(void)
     #ifdef PRIORITY
     for (uint64 i=1; i <= LAB_TEST_NUM; i++)
     {        
-        uint64 pgtbl = (uint64)alloc_pages(1);
+        uint64 pgtbl = (uint64)kmalloc(PAGE_SIZE);
 
-        task[i] = (struct task_struct*)alloc_pages(1);
+        task[i] = (struct task_struct*)kmalloc(PAGE_SIZE);
         task[i]->mm = (struct mm_struct*)kmalloc(sizeof(struct mm_struct));
         task[i]->mm->satp = MODE_SV39 | PP(pgtbl)>>12;
         //task[i]->mm->mmap = vma_build(task[i]->mm, (void *)USER_TASK_START_V, USER_TASK_SIZE, (int)(VM_WRITE|VM_READ|VM_EXEC));
@@ -94,7 +93,7 @@ void do_timer(void)
     {
         schedule();
     }
-    //print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
+    print("[PID = %l] Context Calculation: counter = %l\n",current->pid,current->counter);
     return ;
     #endif
 
@@ -137,7 +136,7 @@ void schedule(void)
             for (int j = 1; j <= LAB_TEST_NUM; j++)
             {
                 task[j]->counter = rand();      //重新赋值
-                //print("[PID = %l] Reset counter = %l\n",task[j]->pid,task[j]->counter);
+                print("[PID = %l] Reset counter = %l\n",task[j]->pid,task[j]->counter);
             }
         }
         else
@@ -145,8 +144,6 @@ void schedule(void)
             break;
         }
     }
-    if (current!=task[next])
-        print("[!] Switch from task %l [task struct:0x%X, sp:0x%X] to task %l [task struct:0x%X, sp:0x%X], prio: %l, counter: %l\n", current->pid, current, current->thread.sp ,task[next]->pid, task[next], task[next]->thread.sp,task[next]->priority, task[next]->counter);
     switch_to(task[next]);
     #endif
 
@@ -159,7 +156,7 @@ void schedule(void)
 		    if(task[j] != 0 && task[j]->counter == 0)//&& current == task[j]
 		    {
 			    task[j]->counter = 7-(j-1)%4;//current->counter = 7-(j-1)%4
-                //print("[PID = %l] Reset counter = %l\n", task[j]->pid, 7-(j-1)%4);
+                print("[PID = %l] Reset counter = %l\n", task[j]->pid, 7-(j-1)%4);
 		    }
 	    }
     }
@@ -187,15 +184,11 @@ void schedule(void)
         --p;
     }
 
-	if(current != task[next]){
-        print("[!] Switch from task %l [task struct:0x%X, sp:0x%X] to task %l [task struct:0x%X, sp:0x%X], prio: %l, counter: %l\n", current->pid, current, current->thread.sp ,task[next]->pid, task[next], task[next]->thread.sp,task[next]->priority, task[next]->counter);
-}
-
-	// print("tasks' priority changed\n");
+	print("tasks' priority changed\n");
     for( int i=1; i < NR_TASKS && task[i] != 0; i++)//重新分配task[1-4]优先级
     {
         task[i]->priority = rand();
-        // print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
+        print("[PID = %l] counter = %l priority = %l\n",task[i]->pid,task[i]->counter,task[i]->priority);    
     }
     switch_to(task[next]);                      //切换到新任务
     #endif
@@ -205,6 +198,7 @@ void schedule(void)
 void switch_to(struct task_struct* next)
 {
     if (next==current) return;
+    print("[!] Switch from task %l [task struct:0x%X, sp:0x%X] to task %l [task struct:0x%X, sp:0x%X], prio: %l, counter: %l\n", current->pid, current, current->thread.sp ,next->pid, next, next->thread.sp,next->priority, next->counter);
     register struct task_struct *prev = current;
     current = next;
     __switch_page(current->mm->satp);
