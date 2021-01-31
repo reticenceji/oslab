@@ -1,8 +1,7 @@
 #include "sched.h"
 #include "vma.h"
 #include "slub.h"
-#include "../../../include/stddef.h"
-#include <sched.h>
+#include "stddef.h"
 /* 找到va所在vma并返回, 若找不到返回NULL */
 struct vm_area_struct *vma_find(uint64 va)
 {

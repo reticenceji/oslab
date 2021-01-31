@@ -1,7 +1,7 @@
 #ifndef _SYSCALL_H
 #define _SYSCALL_H
 
-#include "../../../include/types.h"
+#include "stddef.h"
 //系统调用号
 #define SYS_WRITE 64
 #define SYS_GETPID 172

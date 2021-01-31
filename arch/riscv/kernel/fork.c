@@ -1,10 +1,10 @@
 #include "sched.h"
-#include "../../../include/types.h"
-#include "../../../include/string.h"
+#include "string.h"
 #include "slub.h"
 #include "syscall.h"
 #include "vma.h"
 #include "vm.h"
+
 static void copy_mm(struct task_struct *child);
 static void copy_mmap(struct task_struct *child);
 static struct task_struct* dup_task_struct (struct task_struct *current);
@@ -55,7 +55,7 @@ pid_t fork()
     return child_ts->pid;
 }
 
-/* TODO 主要功能是调用汇编的ret_from_fork */
+/* 调用汇编的ret_from_fork */
 void fork_ret()
 {
     ret_from_fork(current->stack,current->thread.sp);

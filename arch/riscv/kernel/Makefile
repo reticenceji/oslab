@@ -1,4 +1,5 @@
 VPATH = ../../../lib
+CFLAG += -I ../../../include
 all: head.o entry.o strap.o sched.o vm.o syscall.o slub.o buddy.o mm.o vma.o fault.o fork.o
 .PHONY: all
 

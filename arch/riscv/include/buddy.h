@@ -1,8 +1,7 @@
 #ifndef _BUDDY_H
 #define _BUDDY_H
 
-#include "../../../include/types.h"
-
+#include "stddef.h"
 //它叫bitmap，但不是bitmap。存储的是longest
 struct buddy {
 	uint64 size;

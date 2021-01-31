@@ -1,7 +1,8 @@
 #ifndef _SLUB_H
 #define _SLUB_H
 
-#include "../../../include/list.h"
+#include "stddef.h"
+#include "list.h"
 
 #define NR_PARTIAL 9
 #define PAGE_SHIFT 12

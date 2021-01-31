@@ -1,7 +1,6 @@
 #include "slub.h"
-#include "../../../include/stddef.h"
 #include "buddy.h"
-#include "../../../include/string.h"
+#include "string.h"
 #include "vm.h"
 enum{
     PAGE_FREE,

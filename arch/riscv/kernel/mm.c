@@ -1,8 +1,8 @@
 #include "sched.h"
-#include "../../../include/string.h"
+#include "string.h"
 #include "vm.h"
 #include "vma.h"
-#include <sched.h>
+
 #define PAGE_MASK (0x3FF)
 #define FLAG2PAGE_PROT(FLAG) (((FLAG)&0x7)>>1)
 

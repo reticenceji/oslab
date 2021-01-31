@@ -1,9 +1,10 @@
 #include "sched.h"
 #include "vm.h"
-#include "../../../include/rand.h"
+#include "rand.h"
 #include "put.h"
 #include "slub.h"
 #include "buddy.h"
+
 #define INF 1e9
 struct task_struct *current;
 struct task_struct *task[NR_TASKS];

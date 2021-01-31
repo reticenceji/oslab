@@ -1,12 +1,9 @@
 #ifndef _VM_H
 #define _VM_H
 
+#include "stddef.h"
 #include "sched.h"
-#include "../../../include/types.h"
 
-#ifndef NULL
-    #define NULL 0L
-#endif
 #define REG_SIZE (8)
 #ifndef PAGE_SIZE
     #define PAGE_SIZE 4096

@@ -1,6 +1,7 @@
 #ifndef _SCHED_H
 #define _SCHED_H
-#include "../../../include/types.h"
+
+#include "stddef.h"
 
 #define TASK_SIZE   (4096)
 #define THREAD_OFFSET  (5 * 0x08)
