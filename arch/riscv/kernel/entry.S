@@ -1,323 +1,228 @@
-.globl exception_addr_s
-.macro PUSH reg
-    addi sp,sp,-8
-    sd \reg,0(sp)
-.endm				
-.macro POP reg
-    ld \reg,0(sp)
-    addi sp,sp,8
-.endm
-.equ SCAUSE_STI_NUM,0x8000000000000005
-.equ CODE_MASK,0xFF 		#取中断/异常号的mask
+#include "asm/asm.h"
 
+.globl exception_addr_s
 .section .text.entry
 exception_addr_s:
-	# TODO 我打算重构这里，这样PUSH效率好像有点低，不过问题倒也不大
-	csrrw sp,sscratch,sp	#sscratch存的是kernel stack的地址，和Linux的实现方式有一定区别
-	PUSH x2			 		
-	PUSH x1			
-    PUSH x3
-	PUSH x4
-	PUSH x5
-	PUSH x6
-	PUSH x7
-	PUSH x8
-	PUSH x9
-	PUSH x10			
-	PUSH x11			
-	PUSH x12
-	PUSH x13
-	PUSH x14
-	PUSH x15			# x15 == sp+0x100
-	PUSH x16
-	PUSH x17			# a7 == sp+0x90
-	PUSH x18
-	PUSH x19
-	PUSH x20
-	PUSH x21			# x21 == sp+0x70
-	PUSH x22
-	PUSH x23
-	PUSH x24
-	PUSH x25
-	PUSH x26
-	PUSH x27
-	PUSH x28
-	PUSH x29
-	PUSH x30
-	PUSH x31			# x31 == sp + 0x20
-    csrr t0, sstatus	
-	PUSH t0				# sstatus == sp+0x18
+    //sscratch存的是kernel stack的地址，和Linux的实现方式有一定区别
+    csrrw sp,sscratch,sp
+    addi sp,sp,-PT_REG_SIZE
+    sd s0,PT_S0(sp)
+    sd s1,PT_S1(sp)
+    sd s2,PT_S2(sp)
+    sd s3,PT_S3(sp)
+    sd s4,PT_S4(sp)
+    sd s5,PT_S5(sp)
+    sd s6,PT_S6(sp)
+    sd s7,PT_S7(sp)
+    sd s8,PT_S8(sp)
+    sd s9,PT_S9(sp)
+    sd s10,PT_S10(sp)
+    sd s11,PT_S11(sp)
+    sd a0,PT_A0(sp)
+    sd a1,PT_A1(sp)
+    sd a2,PT_A2(sp)
+    sd a3,PT_A3(sp)
+    sd a4,PT_A4(sp)
+    sd a5,PT_A5(sp)
+    sd a6,PT_A6(sp)
+    sd a7,PT_A7(sp)
+    sd t0,PT_T0(sp)
+    sd t1,PT_T1(sp)
+    sd t2,PT_T2(sp)
+    sd t3,PT_T3(sp)
+    sd t4,PT_T4(sp)
+    sd t5,PT_T5(sp)
+    sd t6,PT_T6(sp)
+    sd tp,PT_TP(sp)
+    sd gp,PT_GP(sp)
+    sd ra,PT_RA(sp)
+    csrr t0, sstatus
+    sd t0,PT_SSTATUS(sp)
     csrr t0, scause
-    PUSH t0				# scause == sp+0x10
+    sd t0,PT_SCAUSE(sp)
     csrr t0, stval
-    PUSH t0				# stval == sp+0x8
+    sd t0,PT_STVAL(sp)
     csrr t0, sepc
-    PUSH t0				# sepc == sp+0x0
-	
-	csrr t0,scause
- 	blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
-	csrr a0,scause		#第一个参数 scause
- 	csrr a1,sepc		#第二个参数 sepc
- 	mv a2,sp			#第三个参数 regs
-	call handler_s		#所有的异常都在这里处理
-	j exception_retaddr_s
+    sd t0,PT_SEPC(sp)
+    
+    csrr t0,scause
+    blt t0,zero,interupt_table_s		#如果最高位是0，那么是中断。
+    csrr a0,scause		#第一个参数 scause
+    csrr a1,sepc		#第二个参数 sepc
+    mv a2,sp			#第三个参数 regs
+    call handler_s		#所有的异常都在这里处理
+    j exception_retaddr_s
 
 interupt_table_s:
-	li t1,SCAUSE_STI_NUM			#对应于Supervisor timer interrupt
-	bne t0,t1,other_interupt_s
-	call sti_handler_s
+    li t1,SCAUSE_STI_NUM			#对应于Supervisor timer interrupt
+    bne t0,t1,other_interupt_s
+    call sti_handler_s
     ecall								#产生ecall_from_s_mode exception，重新设置mtimecmp
-	j exception_retaddr_s
+    j exception_retaddr_s
 other_interupt_s:
-	j exception_retaddr_s	
+    j exception_retaddr_s	
 
 exception_retaddr_s:							
-	#恢复所有的寄存器
-	POP t0
+    #恢复所有的寄存器
+    ld t0,PT_SEPC(sp)
     csrw sepc, t0
-	POP t0
-	csrw stval, t0 
-	POP t0
-	csrw scause,t0
-    POP t0
+    ld t0,PT_STVAL(sp)
+    csrw stval, t0 
+    ld t0,PT_SCAUSE(sp)
+    csrw scause,t0
+    ld t0,PT_SSTATUS(sp)
     csrw sstatus, t0
-	POP x31
-	POP x30
-	POP x29
-	POP x28
-	POP x27
-	POP x26
-	POP x25
-	POP x24
-	POP x23
-	POP x22
-	POP x21
-	POP x20
-	POP x19
-	POP x18
-	POP x17
-	POP x16
-	POP x15
-	POP x14
-	POP x13
-	POP x12
-	POP x11
-	POP x10
-	POP x9
-	POP x8
-	POP x7
-	POP x6
-	POP x5
-	POP x4
-	POP x3
-	POP x1
-	POP x2
-	csrrw sp,sscratch,sp
-	sret
-#第一个参数 a0 current.mm.satp
+    ld s0,PT_S0(sp)
+    ld s1,PT_S1(sp)
+    ld s2,PT_S2(sp)
+    ld s3,PT_S3(sp)
+    ld s4,PT_S4(sp)
+    ld s5,PT_S5(sp)
+    ld s6,PT_S6(sp)
+    ld s7,PT_S7(sp)
+    ld s8,PT_S8(sp)
+    ld s9,PT_S9(sp)
+    ld s10,PT_S10(sp)
+    ld s11,PT_S11(sp)
+    ld a0,PT_A0(sp)
+    ld a1,PT_A1(sp)
+    ld a2,PT_A2(sp)
+    ld a3,PT_A3(sp)
+    ld a4,PT_A4(sp)
+    ld a5,PT_A5(sp)
+    ld a6,PT_A6(sp)
+    ld a7,PT_A7(sp)
+    ld t0,PT_T0(sp)
+    ld t1,PT_T1(sp)
+    ld t2,PT_T2(sp)
+    ld t3,PT_T3(sp)
+    ld t4,PT_T4(sp)
+    ld t5,PT_T5(sp)
+    ld t6,PT_T6(sp)
+    ld tp,PT_TP(sp)
+    ld gp,PT_GP(sp)
+    ld ra,PT_RA(sp)
+    addi sp,sp,PT_REG_SIZE
+    csrrw sp,sscratch,sp
+    sret
+
+/* input: a0=current.mm.satp
+ * output: no
+ * 交换satp
+ */
 .globl __switch_page
 .type __switch_page,@function
-
 __switch_page:
-	csrw satp, a0
-	sfence.vma zero, zero
-	ret	
-#第一个参数 a0 current
-#第二个参数 a1 prev
+    csrw satp, a0
+    sfence.vma zero, zero
+    ret
+	
+/* input: a0=current,a1=prev
+ * output: no
+ * 交换thread_info
+ */
 .globl __switch_to
 .type __switch_to,@function
 __switch_to:
-	
-	csrr t0,sscratch
-	sd t0,-16(a1)
-	sd ra,0(a1)
-	sd sp,8(a1)
-	sd s0,16(a1)
-	sd s1,24(a1)
-	sd s2,32(a1)
-	sd s3,40(a1)
-	sd s4,48(a1)
-	sd s5,56(a1)
-	sd s6,64(a1)
-	sd s7,72(a1)
-	sd s8,80(a1)
-	sd s9,88(a1)
-	sd s10,96(a1)
-	sd s11,104(a1)
+    csrr t0,sscratch
+    sd t0,-16(a1)
+    sd ra,0(a1)
+    sd sp,8(a1)
+    sd s0,16(a1)
+    sd s1,24(a1)
+    sd s2,32(a1)
+    sd s3,40(a1)
+    sd s4,48(a1)
+    sd s5,56(a1)
+    sd s6,64(a1)
+    sd s7,72(a1)
+    sd s8,80(a1)
+    sd s9,88(a1)
+    sd s10,96(a1)
+    sd s11,104(a1)
 
-
-	ld t0,-16(a0)
-	csrw sscratch,t0
-	ld ra,0(a0)
-	ld sp,8(a0)
-	ld s0,16(a0)
-	ld s1,24(a0)
-	ld s2,32(a0)
-	ld s3,40(a0)
-	ld s4,48(a0)
-	ld s5,56(a0)
-	ld s6,64(a0)
-	ld s7,72(a0)
-	ld s8,80(a0)
-	ld s9,88(a0)
-	ld s10,96(a0)
-	ld s11,104(a0)
-
+    ld t0,-16(a0)
+    csrw sscratch,t0
+    ld ra,0(a0)
+    ld sp,8(a0)
+    ld s0,16(a0)
+    ld s1,24(a0)
+    ld s2,32(a0)
+    ld s3,40(a0)
+    ld s4,48(a0)
+    ld s5,56(a0)
+    ld s6,64(a0)
+    ld s7,72(a0)
+    ld s8,80(a0)
+    ld s9,88(a0)
+    ld s10,96(a0)
+    ld s11,104(a0)
     ret
 
+/* input: no
+ * output: 如果页表未开启，返回0
+ */ 
 .globl __is_page_open
 .type __is_page_open,@function
 __is_page_open:
-	csrr a0,satp
-	srli a0,a0,60 
-	ret
+    csrr a0,satp
+    srli a0,a0,60 
+    ret
 
 .globl __get_sscratch
 .type __get_sscratch,@function
 __get_sscratch:
-	csrr a0,sscratch
-	ret
-
-#第一个参数 a0 stack
-#第二个参数 a1 kernel_sp
+    csrr a0,sscratch
+    ret
+/* input:   a0 = stack
+ *          a1 = kernel_sp
+ * output:  a0 = 0
+ * fork的返回，从事先保存的寄存器中把寄存器读出来
+ */
 .globl ret_from_fork
 .type ret_from_fork,@function
 ret_from_fork:
-	csrr sp,sscratch		#继承父进程的用户栈虚拟地址
-	csrw sscratch,a1		#和父进程有不一样的系统栈地址
+    csrr sp,sscratch		#继承父进程的用户栈虚拟地址
+    csrw sscratch,a1		#和父进程有不一样的系统栈地址
 
-	ld t0,0x0(a0)
-	add t0,t0,4
-	csrw sepc,t0
-	ld t0,0x8(a0)
-	csrw stval,t0
-	ld t0,0x10(a0)
-	csrw scause,t0
-	ld t0,0x18(a0)
-	csrw sstatus,t0
-	ld x31,0x20(a0)
-	ld x30,0x28(a0)
-	ld x29,0x30(a0)
-	ld x28,0x38(a0)
-	ld x27,0x40(a0)
-	ld x26,0x48(a0)
-	ld x25,0x50(a0)
-	ld x24,0x58(a0)
-	ld x23,0x60(a0)
-	ld x22,0x68(a0)
-	ld x21,0x70(a0)
-	ld x20,0x78(a0)
-	ld x19,0x80(a0)
-	ld x18,0x88(a0)
-	ld x17,0x90(a0)
-	ld x16,0x98(a0)
-	ld x15,0xa0(a0)
-	ld x14,0xa8(a0)
-	ld x13,0xb0(a0)
-	ld x12,0xb8(a0)
-	ld x11,0xc0(a0)
-	ld x9,0xd0(a0)
-	ld x8,0xd8(a0)
-	ld x7,0xe0(a0)
-	ld x6,0xe8(a0)
-	ld x5,0xf0(a0)
-	ld x4,0xf8(a0)
-	ld x3,0x100(a0)
-	ld ra,0x108(a0)
-	#ld sp,0x110(a0)
-	#ld x10,0xc8(a0)		#x10就是a0
+    ld t0,PT_SEPC(a0)
+    addi t0,t0,4
+    csrw sepc, t0
+    ld t0,PT_STVAL(a0)
+    csrw stval, t0 
+    ld t0,PT_SCAUSE(a0)
+    csrw scause,t0
+    ld t0,PT_SSTATUS(a0)
+    csrw sstatus, t0
+    ld s0,PT_S0(a0)
+    ld s1,PT_S1(a0)
+    ld s2,PT_S2(a0)
+    ld s3,PT_S3(a0)
+    ld s4,PT_S4(a0)
+    ld s5,PT_S5(a0)
+    ld s6,PT_S6(a0)
+    ld s7,PT_S7(a0)
+    ld s8,PT_S8(a0)
+    ld s9,PT_S9(a0)
+    ld s10,PT_S10(a0)
+    ld s11,PT_S11(a0)
+    ld a1,PT_A1(a0)
+    ld a2,PT_A2(a0)
+    ld a3,PT_A3(a0)
+    ld a4,PT_A4(a0)
+    ld a5,PT_A5(a0)
+    ld a6,PT_A6(a0)
+    ld a7,PT_A7(a0)
+    ld t0,PT_T0(a0)
+    ld t1,PT_T1(a0)
+    ld t2,PT_T2(a0)
+    ld t3,PT_T3(a0)
+    ld t4,PT_T4(a0)
+    ld t5,PT_T5(a0)
+    ld t6,PT_T6(a0)
+    ld tp,PT_TP(a0)
+    ld gp,PT_GP(a0)
+    ld ra,PT_RA(a0)
 
-	mv a0,zero		#对于子进程fork返回0
-	sret
-
-/* 如果debug成功了，试试把原来的push改成 
-	.equ PT_REG_LEN,-0x110
-	csrrw sp,sscratch,sp
-	sd sp,0x10(sp)
-	add sp,sp,-0x118
-	sd x2,0x110(sp)
-	sd x3,0x100(sp)
-	sd x4,0xf8(sp)
-	sd x5,0xf0(sp)
-	sd x6,0xe8(sp)
-	sd x7,0xe0(sp)
-	sd x8,0xd8(sp)
-	sd x9,0xd0(sp)
-	sd x10,0xc8(sp)
-	sd x11,0xc0(sp)
-	sd x12,0xb8(sp)
-	sd x13,0xb0(sp)
-	sd x14,0xa8(sp)
-	sd x15,0xa0(sp)
-	sd x16,0x98(sp)
-	sd x17,0x90(sp)
-	sd x18,0x88(sp)
-	sd x19,0x80(sp)
-	sd x20,0x78(sp)
-	sd x21,0x70(sp)
-	sd x22,0x68(sp)
-	sd x23,0x60(sp)
-	sd x24,0x58(sp)
-	sd x25,0x50(sp)
-	sd x26,0x48(sp)
-	sd x27,0x40(sp)
-	sd x28,0x38(sp)
-	sd x29,0x30(sp)
-	sd x30,0x28(sp)
-	sd x31,0x20(sp)
-	csrr t0,sstatus
-	sd t0,0x18(sp)
-	csrr t0,scause
-	sd t0,0x10(s0)
-	csrr t0,stval
-	sd t0,0x8(sp)
-	csrr t0,sscratch
-	sd t0,0(sp)
-
-
-
-pop改成
-
-	ld t0,0(sp)
-	csrw sepc,t0
-	ld t0,8(sp)
-	csrw stval,t0
-	ld t0,0x10(sp)
-	csrw scause,t0
-	ld t0,0x18(sp)
-	csrw sstatus,t0
-	ld x31,0x20(sp)
-	ld x30,0x28(sp)
-	ld x29,0x30(sp)
-	ld x28,0x38(sp)
-	ld x27,0x40(sp)
-	ld x26,0x48(sp)
-	ld x25,0x50(sp)
-	ld x24,0x58(sp)
-	ld x23,0x60(sp)
-	ld x22,0x68(sp)
-	ld x21,0x70(sp)
-	ld x20,0x78(sp)
-	ld x19,0x80(sp)
-	ld x18,0x88(sp)
-	ld x17,0x90(sp)
-	ld x16,0x98(sp)
-	ld x15,0xa0(sp)
-	ld x14,0xa8(sp)
-	ld x13,0xb0(sp)
-	ld x12,0xb8(sp)
-	ld x11,0xc0(sp)
-	ld x10,0xc8(sp)
-	ld x9,0xd0(sp)
-	ld x8,0xd8(sp)
-	ld x7,0xe0(sp)
-	ld x6,0xe8(sp)
-	ld x5,0xf0(sp)
-	ld x4,0xf8(sp)
-	ld x3,0x100(sp)
-	ld x1,0x110(sp)
-	add sp,sp,0x118
-	ld x2,-0x10(sp)
-	csrrw sp,sscratch,sp
-	sret
-*/
+    mv a0,zero		#对于子进程fork返回0
+    sret

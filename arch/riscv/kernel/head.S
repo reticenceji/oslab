@@ -1,17 +1,6 @@
+#include "asm/asm.h"
 .section .text.init
 .globl _start
-.macro PUSH reg
-	addi sp,sp,-8
-    sd  \reg, 0(sp)
-.endm				#宏
-.macro POP reg
-    ld  \reg, 0(sp)
-	addi sp,sp,8
-.endm
-.equ MTIME, 0x200bff8
-.equ MTIMECMP, 0x2004000
-.equ MAP_OFFSET, 0xffffffe000000000-0x80000000  #与vm.h的MAP_OFFSET应该相同
-.equ SATP,0x8000000000081000        #与vm.h的KERNEL_SATP应该相同
 _start:
     la t0, _bss_start
     la t1, _bss_end             #后面那个符号是lds给出的
@@ -72,54 +61,53 @@ virtual_next:
     call slub_init
     
     j start_kernel
+
 .align 2
-
-exception_addr_m:
 .globl exception_addr_m
-#save context     
-    csrrw sp, mscratch, sp        # 交换sp和mscratch的值
-    PUSH x2			              # 将原来的sp压栈
-	PUSH x1			
-    PUSH x3
-	PUSH x4
-	PUSH x5
-	PUSH x6
-	PUSH x7
-	PUSH x8
-	PUSH x9
-	PUSH x10
-	PUSH x11
-	PUSH x12
-	PUSH x13
-	PUSH x14
-	PUSH x15
-	PUSH x16
-	PUSH x17
-	PUSH x18
-	PUSH x19
-	PUSH x20
-	PUSH x21
-	PUSH x22
-	PUSH x23
-	PUSH x24
-	PUSH x25
-	PUSH x26
-	PUSH x27
-	PUSH x28
-	PUSH x29
-	PUSH x30
-	PUSH x31
-	csrr t0, mstatus
-	PUSH t0
+exception_addr_m:
+    csrrw sp, mscratch, sp        #交换sp和mscratch的值
+    addi sp,sp,-PT_REG_SIZE
+    sd s0,PT_S0(sp)
+    sd s1,PT_S1(sp)
+    sd s2,PT_S2(sp)
+    sd s3,PT_S3(sp)
+    sd s4,PT_S4(sp)
+    sd s5,PT_S5(sp)
+    sd s6,PT_S6(sp)
+    sd s7,PT_S7(sp)
+    sd s8,PT_S8(sp)
+    sd s9,PT_S9(sp)
+    sd s10,PT_S10(sp)
+    sd s11,PT_S11(sp)
+    sd a0,PT_A0(sp)
+    sd a1,PT_A1(sp)
+    sd a2,PT_A2(sp)
+    sd a3,PT_A3(sp)
+    sd a4,PT_A4(sp)
+    sd a5,PT_A5(sp)
+    sd a6,PT_A6(sp)
+    sd a7,PT_A7(sp)
+    sd t0,PT_T0(sp)
+    sd t1,PT_T1(sp)
+    sd t2,PT_T2(sp)
+    sd t3,PT_T3(sp)
+    sd t4,PT_T4(sp)
+    sd t5,PT_T5(sp)
+    sd t6,PT_T6(sp)
+    sd tp,PT_TP(sp)
+    sd gp,PT_GP(sp)
+    sd ra,PT_RA(sp)
+    csrr t0, mstatus
+    sd t0,PT_MSTATUS(sp)
     csrr t0, mcause
-    PUSH t0
+    sd t0,PT_MCAUSE(sp)
     csrr t0, mtval
-    PUSH t0
+    sd t0,PT_MTVAL(sp)
     csrr t0, mepc
-    PUSH t0                         #保存必要的CSR
+    sd t0,PT_MEPC(sp)
 
     csrr t0, mcause
-	blt t0,zero,interupt_table_m	#如果最高位是0，那么是中断。
+    blt t0,zero,interupt_table_m	#如果最高位是0，那么是中断。
 exception_table_m:
 ecall_handler_m:            #I think the most optimum way is set mtvec[low]=1,use jump table
     li t1, MTIMECMP
@@ -130,11 +118,11 @@ ecall_handler_m:            #I think the most optimum way is set mtvec[low]=1,us
     sd t1, 0(t0)                    #mtimecmp += 100000
     li t0, 0x80
     csrs mie, t0                    #mie[mtie] = 1
-    POP t0
-    addi t0, t0, 4
-    csrw mepc,t0                    #mepc += 4
     li t0, 0x20
     csrc mip,t0
+    ld t0,PT_MEPC(sp)
+    addi t0, t0, 4
+    sd t0,PT_MEPC(sp)
     j exception_retaddr_m
 
 interupt_table_m:
@@ -143,47 +131,47 @@ mti_handler_m:
     csrc mie, t0                    #mie[mtie] = 0
     li t0, 0x20
     csrs mip, t0                    #mip[stip] = 1
-    POP t0
-    csrw mepc,t0
     j exception_retaddr_m
 
 exception_retaddr_m:
-	POP t0
-    csrw mtval, t0
-    POP t0
-    csrw mcause, t0
-    POP t0
+    ld t0,PT_MEPC(sp)
+    csrw mepc, t0
+    ld t0,PT_MTVAL(sp)
+    csrw mtval, t0 
+    ld t0,PT_MCAUSE(sp)
+    csrw mcause,t0
+    ld t0,PT_MSTATUS(sp)
     csrw mstatus, t0
-    POP x31
-	POP x30
-	POP x29
-	POP x28
-	POP x27
-	POP x26
-	POP x25
-	POP x24
-	POP x23
-	POP x22
-	POP x21
-	POP x20
-	POP x19
-	POP x18
-	POP x17
-	POP x16
-	POP x15
-	POP x14
-	POP x13
-	POP x12
-	POP x11
-	POP x10
-	POP x9
-	POP x8
-	POP x7
-	POP x6
-	POP x5
-	POP x4
-	POP x3
-	POP x1
-	POP x2
+    ld s0,PT_S0(sp)
+    ld s1,PT_S1(sp)
+    ld s2,PT_S2(sp)
+    ld s3,PT_S3(sp)
+    ld s4,PT_S4(sp)
+    ld s5,PT_S5(sp)
+    ld s6,PT_S6(sp)
+    ld s7,PT_S7(sp)
+    ld s8,PT_S8(sp)
+    ld s9,PT_S9(sp)
+    ld s10,PT_S10(sp)
+    ld s11,PT_S11(sp)
+    ld a0,PT_A0(sp)
+    ld a1,PT_A1(sp)
+    ld a2,PT_A2(sp)
+    ld a3,PT_A3(sp)
+    ld a4,PT_A4(sp)
+    ld a5,PT_A5(sp)
+    ld a6,PT_A6(sp)
+    ld a7,PT_A7(sp)
+    ld t0,PT_T0(sp)
+    ld t1,PT_T1(sp)
+    ld t2,PT_T2(sp)
+    ld t3,PT_T3(sp)
+    ld t4,PT_T4(sp)
+    ld t5,PT_T5(sp)
+    ld t6,PT_T6(sp)
+    ld tp,PT_TP(sp)
+    ld gp,PT_GP(sp)
+    ld ra,PT_RA(sp)
+    addi sp,sp,PT_REG_SIZE
     csrrw sp,mscratch,sp    
     mret
